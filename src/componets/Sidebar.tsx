@@ -37,8 +37,8 @@ const Sidebar = () => {
         />
       </div>
       <nav className="nav-links">
-        <a href="/" className={`link ${window.location.pathname === "/" ? "active" : ""}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
-        <a href="/settings" className={`link ${window.location.pathname === "/settings" ? "active" : ""}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
+        <a href="#installs" className={`link ${(window.location.hash || '#installs') === '#installs' ? 'active' : ''}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
+        <a href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
         <a onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" /> Support</a>
       </nav>
     </aside>

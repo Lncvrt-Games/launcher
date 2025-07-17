@@ -7,4 +7,5 @@ body {
   font-family: 'Roboto', sans-serif;
   background-color: $backgroundColor;
   color: white;
+  user-select: none;
 }
