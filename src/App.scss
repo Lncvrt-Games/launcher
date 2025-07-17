@@ -1,6 +1,10 @@
 @use 'tailwindcss' as *;
 @use '@fontsource/roboto' as *;
 
+$backgroundColor: #131313;
+
 body {
   font-family: 'Roboto', sans-serif;
+  background-color: $backgroundColor;
+  color: white;
 }

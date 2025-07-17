@@ -7,9 +7,11 @@ export default function App () {
   return (
     <HashRouter>
       <Sidebar />
-      <Routes>
-        <Route path='/' element={<Home />} />
-      </Routes>
+      <main style={{ marginLeft: '15rem' }}>
+        <Routes>
+          <Route path='/' element={<Home />} />
+        </Routes>
+      </main>
     </HashRouter>
   )
 }
