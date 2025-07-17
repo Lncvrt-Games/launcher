@@ -1,11 +1,13 @@
-import "./App.scss";
+import { HashRouter, Route, Routes } from 'react-router-dom'
+import './App.scss'
+import Home from './routes/Home'
 
-function App() {
+export default function App () {
   return (
-    <main className="container">
-      <p>Berry Dash Manager</p>
-    </main>
-  );
+    <HashRouter>
+      <Routes>
+        <Route path='/' element={<Home />} />
+      </Routes>
+    </HashRouter>
+  )
 }
-
-export default App;
