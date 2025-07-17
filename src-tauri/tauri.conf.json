@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "berry-manager",
+  "productName": "Berry Dash Manager",
   "version": "1.0.0",
   "identifier": "xyz.lncvrt.berrydash-manager",
   "build": {
