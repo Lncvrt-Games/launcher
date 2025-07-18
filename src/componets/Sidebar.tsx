@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCog, faServer } from '@fortawesome/free-solid-svg-icons'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { useState } from 'react'
+import { platform } from '@tauri-apps/plugin-os'
 
 const Sidebar = () => {
   const [rot, setRot] = useState(0)
@@ -19,7 +20,8 @@ const Sidebar = () => {
           height={48}
           style={{
             transform: `rotate(${rot}deg)`,
-            transition: 'transform 0.3s ease'
+            transition: 'transform 0.3s ease',
+            marginTop: platform() == 'macos' ? '20px' : '0px'
           }}
           onClick={() =>
             setRot(r => {
