@@ -6,6 +6,7 @@ import { faCog, faServer } from '@fortawesome/free-solid-svg-icons'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { useState } from 'react'
 import { platform } from '@tauri-apps/plugin-os'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const Sidebar = () => {
   const [rot, setRot] = useState(0)
@@ -13,6 +14,23 @@ const Sidebar = () => {
 
   return (
     <aside className='sidebar'>
+      <div
+        className='dragarea'
+        style={{
+          height: '30px',
+          width: 'calc(var(--spacing) * 60)',
+          top: 0,
+          left: 0,
+          marginBottom: '-15px',
+          position: 'absolute',
+          zIndex: 9999,
+          display: platform() == 'macos' ? 'block' : 'none',
+          pointerEvents: 'auto'
+        }}
+        onMouseDown={() => {
+          getCurrentWindow().startDragging()
+        }}
+      ></div>
       <div className='logo'>
         <img
           src={Icon}
