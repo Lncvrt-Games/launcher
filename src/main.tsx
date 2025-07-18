@@ -20,10 +20,10 @@ function App () {
     return () => document.removeEventListener('contextmenu', handler)
   }, [])
 
-  function renderContent() {
-    if (hash === "#installs") {
+  function renderContent () {
+    if (hash === '#installs') {
       return <Installs />
-    } else if (hash === "#settings") {
+    } else if (hash === '#settings') {
       return <Settings />
     }
     return null
@@ -32,9 +32,7 @@ function App () {
   return (
     <>
       <Sidebar />
-      <main style={{ marginLeft: '15rem' }}>
-        {renderContent()}
-      </main>
+      <main style={{ marginLeft: '15rem' }}>{renderContent()}</main>
     </>
   )
 }

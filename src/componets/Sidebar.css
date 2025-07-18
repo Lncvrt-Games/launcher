@@ -13,9 +13,14 @@
 }
 
 .link {
-  @apply text-white p-2 rounded-lg no-underline cursor-pointer transition-colors duration-[0.25s];
+  @apply text-[#bdbdbd] p-2 rounded-lg no-underline cursor-pointer transition-colors duration-[0.25s];
 }
 
-.link.active, .link:hover {
+.link.active {
   @apply bg-[#313131];
+}
+
+.link.active,
+.link:hover {
+  @apply text-white;
 }
