@@ -11,5 +11,5 @@ img {
 }
 
 .button {
-  @apply bg-[#0a6ec8] rounded-lg cursor-pointer text-[16px] p-1.5;
+  @apply bg-[#4378bf] hover:bg-[#5988c6] rounded-md cursor-pointer text-[16px] p-3 transition-colors duration-[0.25s];
 }
