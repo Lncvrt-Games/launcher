@@ -33,6 +33,7 @@ const Sidebar = () => {
       ></div>
       <div className='logo'>
         <img
+          draggable={false}
           src={Icon}
           width={48}
           height={48}

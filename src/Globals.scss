@@ -6,10 +6,6 @@ body {
   @apply bg-[#131313] text-white select-none;
 }
 
-img {
-  @apply pointer-events-none;
-}
-
 .button {
   @apply bg-[#4378bf] hover:bg-[#5988c6] rounded-md cursor-pointer text-[16px] p-3 transition-colors duration-[0.25s];
 }
