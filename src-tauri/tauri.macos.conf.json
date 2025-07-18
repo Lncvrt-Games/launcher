@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Berry Dash Manager",
+  "productName": "Berry Dash Launcher",
   "version": "1.0.0",
-  "identifier": "xyz.lncvrt.berrydash-manager",
+  "identifier": "xyz.lncvrt.berrydash-launcher",
   "build": {
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "title": "Berry Dash Manager",
+        "title": "Berry Dash Launcher",
         "width": 1000,
         "height": 600,
         "resizable": false,
