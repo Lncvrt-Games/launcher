@@ -1,15 +1,15 @@
 @use 'tailwindcss' as *;
 @use '@fontsource/roboto' as *;
 
-$backgroundColor: #131313;
-
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: $backgroundColor;
-  color: white;
-  user-select: none;
+  @apply bg-[#131313] text-white select-none;
 }
 
 img {
-  pointer-events: none;
+  @apply pointer-events-none;
+}
+
+.button {
+  @apply bg-[#0a6ec8] rounded-lg cursor-pointer text-[16px] p-1.5;
 }
