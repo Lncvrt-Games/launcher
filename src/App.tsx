@@ -13,6 +13,12 @@ export default function App () {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => e.preventDefault()
+    document.addEventListener('contextmenu', handler)
+    return () => document.removeEventListener('contextmenu', handler)
+  }, [])
+
   function renderContent() {
     if (hash === "#installs") {
       return <Installs />
