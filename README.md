@@ -1,3 +1,3 @@
-# Berry Dash Manager
+# Berry Dash Launcher
 
-The version manager & launcher for Berry Dash users
+The version launcher for Berry Dash users
