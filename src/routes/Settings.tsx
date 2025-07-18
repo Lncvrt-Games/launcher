@@ -1,7 +1,7 @@
 export default function Settings () {
   return (
     <>
-      <p>Settings</p>
+      <p className='text-3xl ml-4 mt-4'>Settings</p>
     </>
   )
 }
