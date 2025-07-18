@@ -57,9 +57,9 @@ const Sidebar = () => {
         />
       </div>
       <nav className="nav-links">
-        <a href="#installs" className={`link ${(window.location.hash || '#installs') === '#installs' ? 'active' : ''}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
-        <a href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
-        <a onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" /> Support</a>
+        <a draggable={false} href="#installs" className={`link ${(window.location.hash || '#installs') === '#installs' ? 'active' : ''}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
+        <a draggable={false} href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
+        <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" /> Support</a>
       </nav>
     </aside>
   )

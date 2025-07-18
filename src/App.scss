@@ -9,3 +9,7 @@ body {
   color: white;
   user-select: none;
 }
+
+img {
+  pointer-events: none;
+}
