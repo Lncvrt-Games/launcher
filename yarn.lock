@@ -795,6 +795,13 @@
   dependencies:
     "@tauri-apps/api" "^2.6.0"
 
+"@tauri-apps/plugin-os@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/plugin-os/-/plugin-os-2.3.0.tgz#6e0648e3e1c2a352a49dcf2f38543cb04c14a410"
+  integrity sha512-dm3bDsMuUngpIQdJ1jaMkMfyQpHyDcaTIKTFaAMHoKeUd+Is3UHO2uzhElr6ZZkfytIIyQtSVnCWdW2Kc58f3g==
+  dependencies:
+    "@tauri-apps/api" "^2.6.0"
+
 "@tybys/wasm-util@^0.10.0":
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/@tybys/wasm-util/-/wasm-util-0.10.0.tgz#2fd3cd754b94b378734ce17058d0507c45c88369"
