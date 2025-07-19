@@ -27,7 +27,11 @@
 }
 
 .popup-box {
-  @apply relative w-[85vw] h-[80vh] shadow-[0_0_20px_rgba(0,0,0,0.2)] overflow-auto p-6 rounded-lg bg-[#191919];
+  @apply relative w-[85vw] h-[80vh] shadow-[0_0_20px_rgba(0,0,0,0.2)] rounded-lg bg-[#191919] flex flex-col p-6;
+}
+
+.popup-content {
+  @apply flex-1 overflow-auto border border-[#323232] rounded-lg mt-4;
 }
 
 .close-button {

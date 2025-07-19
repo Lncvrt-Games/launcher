@@ -3,16 +3,16 @@ import './Installs.css'
 import { useState } from 'react'
 import { faX } from '@fortawesome/free-solid-svg-icons'
 
-export default function Installs() {
+export default function Installs () {
   const [showPopup, setShowPopup] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
 
-  function downloadVersion() {
+  function downloadVersion () {
     setShowPopup(true)
     setFadeOut(false)
   }
 
-  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
+  function handleOverlayClick (e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) {
       setFadeOut(true)
       setTimeout(() => setShowPopup(false), 200)
@@ -22,7 +22,10 @@ export default function Installs() {
   return (
     <>
       <p className='text-3xl ml-4 mt-4'>Installs</p>
-      <button className='button text-3xl mt-4 absolute right-4 top-4' onClick={downloadVersion}>
+      <button
+        className='button text-3xl mt-4 absolute right-4 top-4'
+        onClick={downloadVersion}
+      >
         Download new version
       </button>
       {showPopup && (
@@ -41,6 +44,9 @@ export default function Installs() {
               <FontAwesomeIcon icon={faX} />
             </button>
             <p className='text-xl text-center'>Select versions to download</p>
+            <div className='popup-content'>
+              <p className='text-center'>Downloading version list...</p>
+            </div>
           </div>
         </div>
       )}
