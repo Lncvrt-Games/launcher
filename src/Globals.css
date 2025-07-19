@@ -7,7 +7,7 @@ body {
 }
 
 .button {
-  @apply bg-[#0a6ec8] hover:bg-[#1361ad] rounded-md cursor-pointer text-[16px] py-1.5 px-3 transition-colors duration-[0.25s];
+  @apply bg-[#0a6ec8] hover:bg-[#1361ad] disabled:bg-[#124c7e] disabled:hover:bg-[#1b3f63] disabled:text-[#bdbdbd] disabled:hover:text-[#e6e6e6] rounded-md cursor-pointer text-[16px] py-1.5 px-3 transition-colors duration-[0.25s];
 }
 
 ::-webkit-scrollbar {
@@ -19,9 +19,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#555] w-1 rounded-lg;
+  @apply bg-[#555] w-1 rounded-lg active:bg-[#888];
 }
 
-::-webkit-scrollbar-thumb:active {
-  @apply bg-[#888];
-}

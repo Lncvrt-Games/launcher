@@ -16,6 +16,7 @@ function App () {
       ...prev,
       ...versions.map(v => new DownloadProgress(v, 0, false))
     ])
+
     return;
   }
 
@@ -33,7 +34,7 @@ function App () {
 
   function renderContent () {
     if (hash === '#installs') {
-      return <Installs downloadVersions={downloadVersions} />
+      return <Installs downloadVersions={downloadVersions} downloadProgress={downloadProgress} />
     } else if (hash === '#settings') {
       return <Settings />
     }

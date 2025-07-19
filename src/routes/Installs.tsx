@@ -6,7 +6,7 @@ import { LauncherVersion } from '../types/LauncherVersion'
 import axios from 'axios'
 import { InstallsProps } from '../types/InstallsProps'
 
-export default function Installs({ downloadVersions }: InstallsProps) {
+export default function Installs({ downloadVersions, downloadProgress }: InstallsProps) {
   const [showPopup, setShowPopup] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [versionList, setVersionList] = useState<null | LauncherVersion[]>(null);
@@ -39,6 +39,7 @@ export default function Installs({ downloadVersions }: InstallsProps) {
       <button
         className='button text-3xl mt-4 absolute right-4 top-4'
         onClick={downloadVersion}
+        disabled={downloadProgress.length != 0}
       >
         Download new version
       </button>

@@ -1,7 +1,7 @@
-import { LauncherVersion } from "./LauncherVersion";
+import { LauncherVersion } from './LauncherVersion'
 
 export class DownloadProgress {
-  constructor(
+  constructor (
     public version: LauncherVersion,
     public progress: number,
     public done: boolean
