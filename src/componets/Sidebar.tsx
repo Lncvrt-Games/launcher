@@ -56,7 +56,7 @@ export default function Sidebar({ downloadProgress }: SidebarProps) {
               return next
             })
           }
-          onContextMenu={() => {
+          onContextMenu={() =>
             setRot(r => {
               let next = r - dir * 90
               if (next >= 360) {
@@ -68,7 +68,7 @@ export default function Sidebar({ downloadProgress }: SidebarProps) {
               }
               return next
             })
-          }}
+          }
         />
       </div>
       <nav className="nav-links">
