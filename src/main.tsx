@@ -3,10 +3,21 @@ import ReactDOM from 'react-dom/client'
 import Installs from './routes/Installs'
 import Settings from './routes/Settings'
 import Sidebar from './componets/Sidebar'
-import './Globals.scss'
+import './Globals.css'
+import { LauncherVersion } from './types/LauncherVersion'
+import { DownloadProgress } from './types/DownloadProgress'
 
 function App () {
   const [hash, setHash] = useState(window.location.hash || '#installs')
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>([]);
+
+  function downloadVersions(versions: LauncherVersion[]) {
+    setDownloadProgress(prev => [
+      ...prev,
+      ...versions.map(v => new DownloadProgress(v, 0, false))
+    ])
+    return;
+  }
 
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash || '#installs')
@@ -22,7 +33,7 @@ function App () {
 
   function renderContent () {
     if (hash === '#installs') {
-      return <Installs />
+      return <Installs downloadVersions={downloadVersions} />
     } else if (hash === '#settings') {
       return <Settings />
     }
@@ -31,7 +42,7 @@ function App () {
 
   return (
     <>
-      <Sidebar />
+      <Sidebar downloadProgress={downloadProgress} />
       <main style={{ marginLeft: '15rem' }}>{renderContent()}</main>
     </>
   )

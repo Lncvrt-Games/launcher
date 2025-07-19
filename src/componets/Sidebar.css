@@ -4,6 +4,15 @@
   @apply fixed top-0 left-0 w-60 h-screen bg-[#191919] flex flex-col border-e-[1px] border-[#2a2a2a];
 }
 
+.sidebar-downloads {
+  @apply text-[#bdbdbd] fixed bottom-3 left-2 bg-[#242424] rounded-lg border border-[#323232] w-55 p-4 cursor-pointer transition-colors duration-[0.25s];
+}
+
+.sidebar-downloads:hover {
+  @apply text-white;
+  @apply bg-[#323232] border-[#484848];
+}
+
 .logo {
   @apply text-2xl font-bold p-4;
 }
@@ -13,14 +22,18 @@
 }
 
 .link {
-  @apply text-[#bdbdbd] p-2 rounded-lg no-underline cursor-pointer transition-colors duration-[0.25s];
+  @apply text-[#bdbdbd] p-2 rounded-md no-underline cursor-pointer transition-colors duration-[0.25s] border border-transparent;
 }
 
 .link.active {
-  @apply bg-[#313131];
+  @apply bg-[#242424] border-[#323232];
 }
 
 .link.active,
 .link:hover {
   @apply text-white;
+}
+
+.link.active:hover {
+  @apply bg-[#323232] border-[#484848];
 }

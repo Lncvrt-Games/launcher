@@ -2,13 +2,14 @@ import './Sidebar.css'
 import Icon from '../Icon.png'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCog, faServer } from '@fortawesome/free-solid-svg-icons'
+import { faCog, faDownload, faServer } from '@fortawesome/free-solid-svg-icons'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { useState } from 'react'
 import { platform } from '@tauri-apps/plugin-os'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { SidebarProps } from '../types/SidebarProps'
 
-const Sidebar = () => {
+export default function Sidebar({ downloadProgress }: SidebarProps) {
   const [rot, setRot] = useState(0)
   const [dir, setDir] = useState(1)
 
@@ -62,8 +63,9 @@ const Sidebar = () => {
         <a draggable={false} href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
         <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" /> Support</a>
       </nav>
+      <div className='sidebar-downloads'>
+        <p><FontAwesomeIcon icon={faDownload} /> Downloads</p>
+      </div>
     </aside>
   )
 }
-
-export default Sidebar
