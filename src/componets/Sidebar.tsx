@@ -61,7 +61,7 @@ export default function Sidebar({ downloadProgress }: SidebarProps) {
       <nav className="nav-links">
         <a draggable={false} href="#installs" className={`link ${(window.location.hash || '#installs') === '#installs' ? 'active' : ''}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
         <a draggable={false} href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
-        <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" /> Support</a>
+        <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" />Community</a>
       </nav>
       <div className='sidebar-downloads'>
         <p><FontAwesomeIcon icon={faDownload} /> Downloads</p>
