@@ -62,3 +62,7 @@ body {
 .popup-entry button {
   @apply absolute;
 }
+
+.close-button {
+  @apply flex justify-center items-center absolute bg-[#323232] hover:bg-[#484848] text-2xl cursor-pointer text-gray-300 hover:text-white h-12 w-12 p-3 rounded-xl left-2 top-2 transition-colors border border-[#484848] hover:border-[#646464];
+}

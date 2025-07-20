@@ -1,4 +1,3 @@
-import './Installs.css'
 import { useEffect } from 'react'
 import axios from 'axios'
 import { InstallsProps } from '../types/InstallsProps'
