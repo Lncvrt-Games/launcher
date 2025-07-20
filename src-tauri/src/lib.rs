@@ -17,8 +17,8 @@ async fn download(app: AppHandle, url: String, name: String) -> Result<(), Strin
     let mut downloaded: u64 = 0;
     let mut stream = resp.bytes_stream();
 
-    println!("{}", app.path().data_dir().unwrap().display().to_string());
-    let mut file = tokio::fs::File::create(app.path().data_dir().unwrap().join(format!("download_{}.zip", name)))
+    println!("{}", app.path().app_local_data_dir().unwrap().display().to_string());
+    let mut file = tokio::fs::File::create(app.path().app_local_data_dir().unwrap().join(format!("download_{}.zip", name)))
         .await
         .map_err(|e| e.to_string())?;
 
