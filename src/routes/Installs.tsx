@@ -2,6 +2,7 @@ import './Installs.css'
 import { useEffect } from 'react'
 import axios from 'axios'
 import { InstallsProps } from '../types/InstallsProps'
+import { platform } from '@tauri-apps/plugin-os'
 
 export default function Installs({ downloadProgress, showPopup, setShowPopup, setPopupMode, setFadeOut, setSelectedVersionList, setVersionList }: InstallsProps) {
   useEffect(() => {
@@ -9,7 +10,7 @@ export default function Installs({ downloadProgress, showPopup, setShowPopup, se
     setSelectedVersionList([]);
     setVersionList(null)
     axios.get('https://berrydash.lncvrt.xyz/database/launcher/versions.php')
-      .then(res => setVersionList(res.data.reverse()))
+      .then(res => setVersionList(res.data.reverse().filter((d: { platforms: string[] }) => d.platforms.includes(platform()))))
       .catch(() => setVersionList([]))
   }, [showPopup])
 
