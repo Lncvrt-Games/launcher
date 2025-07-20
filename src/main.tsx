@@ -11,6 +11,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faRemove, faX } from '@fortawesome/free-solid-svg-icons'
+import '@fontsource/roboto'
 
 function App () {
   const [hash, setHash] = useState(window.location.hash || '#installs')
