@@ -41,7 +41,7 @@ function App () {
     setDownloadProgress(prev => [...prev, ...newDownloads]);
 
     newDownloads.forEach(download => {
-      invoke('download', { url: download.version.downloadUrls[download.version.platforms.indexOf(platform())] });
+      invoke('download', { url: download.version.downloadUrls[download.version.platforms.indexOf(platform())], name: download.version.version });
     });
   }
 
@@ -76,7 +76,10 @@ function App () {
   return (
     <>
       <Sidebar setShowPopup={setShowPopup} setPopupMode={setPopupMode} setFadeOut={setFadeOut} />
-      <main style={{ marginLeft: '15rem' }}>{renderContent()}</main>
+      <div className="relative z-[1] ml-[239px] w-[761px] border-b border-[#323232] h-[33px] bg-[#161616]" style={{ display: platform() == 'windows' ? 'block' : 'none' }}></div>
+      <div className="relative z-0">
+        <main style={{ marginLeft: '15rem' }}>{renderContent()}</main>
+      </div>
       {showPopup && (
         <div
           className={`popup-overlay ${fadeOut ? 'fade-out' : ''}`}

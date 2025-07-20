@@ -14,15 +14,15 @@ export default function Installs({ downloadProgress, showPopup, setShowPopup, se
   }, [showPopup])
 
   return (
-    <>
-      <p className='text-3xl ml-4 mt-4'>Installs</p>
+    <div className='flex justify-between items-center mt-4 mx-4'>
+      <p className='text-3xl'>Installs</p>
       <button
-        className='button text-3xl mt-4 absolute right-4 top-4'
+        className='button text-3xl'
         onClick={() => { setPopupMode(0); setShowPopup(true); setFadeOut(false) }}
         disabled={downloadProgress.length != 0}
       >
         Download new version
       </button>
-    </>
+    </div>
   )
 }

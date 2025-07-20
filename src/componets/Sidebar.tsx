@@ -41,7 +41,7 @@ export default function Sidebar({ setShowPopup, setPopupMode, setFadeOut }: Side
           style={{
             transform: `rotate(${rot}deg)`,
             transition: 'transform 0.3s ease',
-            marginTop: platform() == 'macos' ? '20px' : '0px'
+            marginTop: ['windows','macos'].includes(platform()) ? '20px' : '0px'
           }}
           onClick={() =>
             setRot(r => {
