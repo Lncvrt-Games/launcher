@@ -9,7 +9,7 @@ import { platform } from '@tauri-apps/plugin-os'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { SidebarProps } from '../types/SidebarProps'
 
-export default function Sidebar({ downloadProgress }: SidebarProps) {
+export default function Sidebar({ setShowPopup, setPopupMode, setFadeOut }: SidebarProps) {
   const [rot, setRot] = useState(0)
   const [dir, setDir] = useState(1)
 
@@ -76,7 +76,7 @@ export default function Sidebar({ downloadProgress }: SidebarProps) {
         <a draggable={false} href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
         <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" />Community</a>
       </nav>
-      <div className='sidebar-downloads'>
+      <div className='sidebar-downloads' onClick={() => { setPopupMode(1); setShowPopup(true); setFadeOut(false) }}>
         <p><FontAwesomeIcon icon={faDownload} /> Downloads</p>
       </div>
     </aside>

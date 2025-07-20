@@ -1,5 +1,5 @@
-import { DownloadProgress } from './DownloadProgress'
-
 export type SidebarProps = {
-  downloadProgress: DownloadProgress[]
+  setShowPopup: (v: boolean) => void
+  setPopupMode: (v: null | number) => void
+  setFadeOut: (v: boolean) => void
 }
