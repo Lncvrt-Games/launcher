@@ -2,7 +2,7 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-  @apply bg-[#131313] text-white select-none;
+  @apply bg-[#0f0f0f] text-white select-none;
 }
 
 .button {
@@ -48,15 +48,15 @@ body {
 }
 
 .popup-box {
-  @apply relative w-[60vw] h-[80vh] shadow-[0_0_20px_rgba(0,0,0,0.2)] rounded-lg bg-[#191919] flex flex-col p-6;
+  @apply relative w-[60vw] h-[80vh] rounded-lg bg-[#161616] border border-[#323232] flex flex-col p-6;
 }
 
 .popup-content {
-  @apply flex-1 overflow-auto border border-[#323232] rounded-lg mt-4;
+  @apply flex-1 overflow-auto bg-[#242424] border border-[#484848] rounded-lg mt-4;
 }
 
 .popup-entry {
-  @apply relative h-[100px] bg-[#242424] m-2 p-2 rounded-lg border border-[#484848];
+  @apply relative h-[100px] bg-[#323232] m-2 p-2 rounded-lg border border-[#646464];
 }
 
 .popup-entry button {
