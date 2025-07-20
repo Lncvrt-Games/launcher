@@ -1,10 +1,38 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 
 use base64::{Engine, engine::general_purpose};
-use futures_util::StreamExt;
+use std::{fs::{create_dir_all, File}, io::{copy, BufReader}, path::PathBuf};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_decorum::WebviewWindowExt;
-use tokio::io::AsyncWriteExt;
+use tokio::{io::AsyncWriteExt, task::spawn_blocking};
+use zip::ZipArchive;
+use futures_util::stream::StreamExt;
+
+pub async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> zip::result::ZipResult<()> {
+    spawn_blocking(move || {
+        let file = File::open(zip_path)?;
+        let mut archive = ZipArchive::new(BufReader::new(file))?;
+
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i)?;
+            let outpath = out_dir.join(file.name());
+
+            if file.is_dir() {
+                create_dir_all(&outpath)?;
+            } else {
+                if let Some(parent) = outpath.parent() {
+                    create_dir_all(parent)?;
+                }
+                let mut outfile = File::create(&outpath)?;
+                copy(&mut file, &mut outfile)?;
+            }
+        }
+
+        Ok(())
+    })
+    .await
+    .map_err(|e| zip::result::ZipError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?
+}
 
 #[tauri::command]
 async fn download(app: AppHandle, url: String, name: String) -> Result<(), String> {
@@ -17,10 +45,14 @@ async fn download(app: AppHandle, url: String, name: String) -> Result<(), Strin
     let mut downloaded: u64 = 0;
     let mut stream = resp.bytes_stream();
 
-    println!("{}", app.path().app_local_data_dir().unwrap().display().to_string());
-    let mut file = tokio::fs::File::create(app.path().app_local_data_dir().unwrap().join(format!("download_{}.zip", name)))
-        .await
-        .map_err(|e| e.to_string())?;
+    let downloads_path = app.path().app_local_data_dir().unwrap().join("downloads");
+    let game_path = app.path().app_local_data_dir().unwrap().join("game");
+    let _ = tokio::fs::create_dir_all(&downloads_path).await;
+    if let Ok(true) = tokio::fs::try_exists(&game_path.join(&name)).await {
+        let _ = tokio::fs::remove_dir_all(&game_path.join(&name)).await;
+    }
+    let _ = tokio::fs::create_dir_all(&game_path.join(&name)).await;
+    let mut file = tokio::fs::File::create(downloads_path.join(format!("{}.part", name))).await.unwrap();
 
     while let Some(chunk) = stream.next().await {
         let chunk = chunk.map_err(|e| e.to_string())?;
@@ -38,6 +70,10 @@ async fn download(app: AppHandle, url: String, name: String) -> Result<(), Strin
         )
         .unwrap();
     }
+
+    tokio::fs::rename(downloads_path.join(format!("{}.part", name)), downloads_path.join(format!("{}.zip", name))).await.unwrap();
+    unzip_to_dir(downloads_path.join(format!("{}.zip", name)), game_path.join(&name)).await.map_err(|e| e.to_string())?;
+    tokio::fs::remove_file(downloads_path.join(format!("{}.zip", name))).await.unwrap();
 
     app.emit("download-finished", &url).unwrap();
     Ok(())
