@@ -9,7 +9,7 @@ export default function Installs({ downloadProgress, showPopup, setShowPopup, se
     setSelectedVersionList([]);
     setVersionList(null)
     axios.get('https://berrydash.lncvrt.xyz/database/launcher/versions.php')
-      .then(res => setVersionList(res.data.reverse().filter((d: { platforms: string[] }) => d.platforms.includes(platform()))))
+      .then(res => setVersionList(res.data.filter((d: { platforms: string[] }) => d.platforms.includes(platform()))))
       .catch(() => setVersionList([]))
   }, [showPopup])
 
