@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faRemove, faX } from '@fortawesome/free-solid-svg-icons'
 import '@fontsource/roboto'
 import Leaderboards from './routes/Leaderboards'
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification'
 
 function App () {
   const [hash, setHash] = useState(window.location.hash || '#installs')
@@ -32,32 +33,48 @@ function App () {
     next?.()
   }
 
-  listen<string>('download-progress', (event) => {
-    const [versionName, progStr] = event.payload.split(':')
-    const prog = Number(progStr)
+  useEffect(() => {
+    const unlistenProgress = listen<string>('download-progress', (event) => {
+      const [versionName, progStr] = event.payload.split(':')
+      const prog = Number(progStr)
 
-    setDownloadProgress(prev => {
-      const i = prev.findIndex(d => d.version.version === versionName)
-      if (i === -1) return prev
-      const copy = [...prev]
-      copy[i] = { ...copy[i], progress: prog }
-      return copy
+      setDownloadProgress(prev => {
+        const i = prev.findIndex(d => d.version.version === versionName)
+        if (i === -1) return prev
+        const copy = [...prev]
+        copy[i] = { ...copy[i], progress: prog }
+        return copy
+      })
     })
-  })
 
-  listen<string>('download-done', (event) => {
-    const versionName = event.payload
-    setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
-    activeDownloads--
-    runNext()
-  })
+    const unlistenDone = listen<string>('download-done', async (event) => {
+      const versionName = event.payload
+      setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
+      activeDownloads--
+      runNext()
+      if (downloadProgress.length === 0) {
+        await notifyUser('Downloads Complete', 'All downloads have completed.')
+      }
+    })
 
-  listen<string>('download-failed', (event) => {
-    const versionName = event.payload
-    setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
-    activeDownloads--
-    runNext()
-  })
+    const unlistenFailed = listen<string>('download-failed', async (event) => {
+      const versionName = event.payload
+      setDownloadProgress(prev =>
+        prev.map(d =>
+          d.version.version === versionName ? { ...d, failed: true } : d
+        )
+      )
+      activeDownloads--
+      runNext()
+      await notifyUser('Download Failed', `The download for version ${versionName} has failed.`)
+    })
+
+    return () => {
+      unlistenProgress.then(f => f())
+      unlistenDone.then(f => f())
+      unlistenFailed.then(f => f())
+    }
+  }, [])
 
   function downloadVersions(versions: LauncherVersion[]) {
     const newDownloads = versions.map(v => new DownloadProgress(v, 0, false, true))
@@ -89,6 +106,17 @@ function App () {
     if (e.target === e.currentTarget) {
       setFadeOut(true)
       setTimeout(() => setShowPopup(false), 200)
+    }
+  }
+
+  async function notifyUser(title: string, body: string) {
+    let permissionGranted = await isPermissionGranted();
+    if (!permissionGranted) {
+      const permission = await requestPermission();
+      permissionGranted = permission === 'granted';
+    }
+    if (permissionGranted) {
+      sendNotification({ title, body });
     }
   }
 
