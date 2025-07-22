@@ -6,8 +6,7 @@ import {
   exists,
   mkdir,
   readTextFile,
-  writeFile,
-  writeTextFile
+  writeFile
 } from '@tauri-apps/plugin-fs'
 import { decrypt, encrypt } from './Encryption'
 import { Keys } from '../enums/Keys'
