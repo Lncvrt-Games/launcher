@@ -21,6 +21,8 @@
     "core:window:allow-toggle-maximize",
     "decorum:allow-show-snap-overlay",
     "fs:default",
+    "fs:allow-applocaldata-read",
+    "fs:allow-applocaldata-write",
     "dialog:default"
   ]
 }

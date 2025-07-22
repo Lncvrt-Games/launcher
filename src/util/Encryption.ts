@@ -1,11 +1,11 @@
 import CryptoJS from 'crypto-js'
 import { Keys } from '../enums/Keys'
 
-export function encrypt (plainText: string): string {
+export function encrypt (plainText: string, key: string = Keys.SERVER_SEND_TRANSFER_KEY): string {
   const iv = CryptoJS.lib.WordArray.random(16)
   const encrypted = CryptoJS.AES.encrypt(
     plainText,
-    CryptoJS.enc.Utf8.parse(Keys.SERVER_SEND_TRANSFER_KEY),
+    CryptoJS.enc.Utf8.parse(key),
     {
       iv,
       mode: CryptoJS.mode.CBC,
@@ -16,7 +16,7 @@ export function encrypt (plainText: string): string {
   return CryptoJS.enc.Base64.stringify(combined)
 }
 
-export function decrypt (dataB64: string): string {
+export function decrypt (dataB64: string, key: string = Keys.SERVER_RECEIVE_TRANSFER_KEY): string {
   const data = CryptoJS.enc.Base64.parse(dataB64)
   const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16)
   const ciphertext = CryptoJS.lib.WordArray.create(
@@ -27,7 +27,7 @@ export function decrypt (dataB64: string): string {
 
   const decrypted = CryptoJS.AES.decrypt(
     cipherParams,
-    CryptoJS.enc.Utf8.parse(Keys.SERVER_RECEIVE_TRANSFER_KEY),
+    CryptoJS.enc.Utf8.parse(key),
     {
       iv,
       mode: CryptoJS.mode.CBC,
