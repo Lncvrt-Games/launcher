@@ -2,15 +2,34 @@ import { useEffect, useState } from 'react'
 import './Leaderboards.css'
 import axios from 'axios'
 import { LeaderboardEntry } from '../types/LeaderboardEntry'
+import { app } from '@tauri-apps/api'
+import { platform } from '@tauri-apps/plugin-os'
+import { decrypt, encrypt } from '../util/Encryption'
 
-export default function Leaderboards() {
+export default function Leaderboards () {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
 
-  function refresh() {
+  async function refresh () {
     setLeaderboardData([])
+    const launcherVersion = await app.getVersion()
     axios
-      .get('https://berrydash.lncvrt.xyz/database/getTopPlayersAPI.php')
-      .then(res => setLeaderboardData(res.data))
+      .post(
+        'https://berrydash.lncvrt.xyz/database/getTopPlayers.php',
+        {
+          [encrypt('type')]: encrypt('0')
+        },
+        {
+          headers: {
+            Requester: 'BerryDashLauncher',
+            LauncherVersion: launcherVersion,
+            ClientPlatform: platform()
+          }
+        }
+      )
+      .then(res => {
+        const decrypted = decrypt(res.data)
+        setLeaderboardData(JSON.parse(decrypted))
+      })
       .catch(e => console.error('Error fetching leaderboard data:', e))
   }
 
@@ -22,15 +41,19 @@ export default function Leaderboards() {
     <div className='mx-4 mt-4'>
       <div className='flex justify-between items-center mb-4'>
         <p className='text-3xl'>Leaderboards</p>
-        <button className='button text-3xl' onClick={refresh}>Refresh</button>
+        <button className='button text-3xl' onClick={refresh}>
+          Refresh
+        </button>
       </div>
       <div className='leaderboard-container'>
         <div className='leaderboard-scroll'>
           {leaderboardData.length ? (
             leaderboardData.map((entry, i) => (
               <div key={entry.username} className='leaderboard-entry'>
-                <p>#{i + 1} {entry.username}</p>
-                <p className='score'>{entry.scoreFormatted}</p>
+                <p>
+                  #{i + 1} {entry.username}
+                </p>
+                <p className='score'>{entry.value}</p>
               </div>
             ))
           ) : (

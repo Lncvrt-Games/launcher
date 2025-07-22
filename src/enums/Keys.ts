@@ -1,0 +1,4 @@
+export enum Keys {
+  SERVER_RECEIVE_TRANSFER_KEY = '',
+  SERVER_SEND_TRANSFER_KEY = ''
+}

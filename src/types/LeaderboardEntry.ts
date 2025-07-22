@@ -1,5 +1,9 @@
 export interface LeaderboardEntry {
   username: string
-  score: bigint
-  scoreFormatted: string
+  userid: bigint
+  value: bigint
+  icon: number
+  overlay: number
+  birdColor: number[]
+  overlayColor: number[]
 }
