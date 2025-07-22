@@ -1,13 +1,15 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 use futures_util::stream::StreamExt;
 use std::{
-    fs::{create_dir_all, File},
-    io::{copy, BufReader},
+    fs::{File, create_dir_all},
+    io::{BufReader, Write, copy},
     path::PathBuf,
-    process::Command, time::Duration,
+    process::Command,
+    time::Duration,
 };
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+use tauri_plugin_opener::OpenerExt;
 use tokio::{io::AsyncWriteExt, task::spawn_blocking, time::timeout};
 use zip::ZipArchive;
 
@@ -100,7 +102,8 @@ async fn download(
             0
         };
 
-        app.emit("download-progress", format!("{}:{}", &name, progress)).unwrap();
+        app.emit("download-progress", format!("{}:{}", &name, progress))
+            .unwrap();
     }
 
     if total_size > 0 && downloaded < total_size {
@@ -163,15 +166,66 @@ fn launch_game(app: AppHandle, name: String, executable: String) {
     }
 }
 
+#[tauri::command]
+fn download_leaderboard(app: AppHandle, content: String) {
+    app.dialog().file().save_file(move |file_path| {
+        if let Some(path) = file_path {
+            let mut path_buf = PathBuf::from(path.to_string());
+            if path_buf.extension().map(|ext| ext != "csv").unwrap_or(true) {
+                path_buf.set_extension("csv");
+            }
+            let path_str = path_buf.to_string_lossy().to_string();
+            if path_str.is_empty() {
+                app.dialog()
+                    .message("No file selected.")
+                    .kind(MessageDialogKind::Error)
+                    .title("Error")
+                    .show(|_| {});
+                return;
+            }
+            let mut file = match File::create(&path_buf) {
+                Ok(f) => f,
+                Err(e) => {
+                    app.dialog()
+                        .message(format!("Failed to create file: {}", e))
+                        .kind(MessageDialogKind::Error)
+                        .title("Error")
+                        .show(|_| {});
+                    return;
+                }
+            };
+            if let Err(e) = file.write_all(content.as_bytes()) {
+                app.dialog()
+                    .message(format!("Failed to write to file: {}", e))
+                    .kind(MessageDialogKind::Error)
+                    .title("Error")
+                    .show(|_| {});
+            } else {
+                let _ = app.opener().open_path(path.to_string(), None::<&str>);
+            }
+        }
+    })
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app
+                .get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_decorum::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![download, launch_game])
+        .invoke_handler(tauri::generate_handler![
+            download,
+            launch_game,
+            download_leaderboard
+        ])
         .setup(|app| {
             #[cfg(target_os = "windows")]
             {

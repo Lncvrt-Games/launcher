@@ -5,6 +5,7 @@ import { LeaderboardEntry } from '../types/LeaderboardEntry'
 import { app } from '@tauri-apps/api'
 import { platform } from '@tauri-apps/plugin-os'
 import { decrypt } from '../util/Encryption'
+import { invoke } from '@tauri-apps/api/core'
 
 export default function Leaderboards () {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
@@ -30,6 +31,17 @@ export default function Leaderboards () {
       .finally(() => setLoading(false))
   }
 
+  function downloadLeaderboard () {
+    let content = 'Username,Score\n'
+    leaderboardData.forEach(entry => {
+      content += `${entry.username},${entry.value}\n`
+    })
+    while (content.endsWith('\n')) {
+      content = content.slice(0, -1)
+    }
+    invoke('download_leaderboard', { content })
+  }
+
   useEffect(() => {
     refresh()
   }, [])
@@ -38,13 +50,22 @@ export default function Leaderboards () {
     <div className='mx-4 mt-4'>
       <div className='flex justify-between items-center mb-4'>
         <p className='text-3xl'>Leaderboards</p>
-        <button
-          className='button text-3xl'
-          onClick={refresh}
-          disabled={loading}
-        >
-          Refresh
-        </button>
+        <div className='flex gap-2'>
+          <button
+            className='button text-3xl'
+            onClick={downloadLeaderboard}
+            disabled={loading || leaderboardData.length === 0}
+          >
+            Download Leaderboards
+          </button>
+          <button
+            className='button text-3xl'
+            onClick={refresh}
+            disabled={loading}
+          >
+            Refresh
+          </button>
+        </div>
       </div>
       <div className='leaderboard-container'>
         <div className='leaderboard-scroll'>
