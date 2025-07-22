@@ -118,7 +118,7 @@ function App () {
   return (
     <>
       <Sidebar setShowPopup={setShowPopup} setPopupMode={setPopupMode} setFadeOut={setFadeOut} />
-      <div className="relative z-[1] ml-[239px] w-[761px] border-b border-[#323232] h-[33px] bg-[#161616]" style={{ display: platform() == 'windows' ? 'block' : 'none' }}></div>
+      <div className="relative z-[2] ml-[239px] w-[761px] border-b border-[#242424] h-[33px] bg-[#161616]" style={{ display: platform() == 'windows' ? 'block' : 'none' }}></div>
       <div className="relative z-0">
         <main style={{ marginLeft: '15rem' }}>{renderContent()}</main>
       </div>

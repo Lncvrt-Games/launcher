@@ -5,7 +5,7 @@
 }
 
 .leaderboard-scroll {
-  @apply h-[85vh] bg-[#161616] border border-[#242424] rounded-lg overflow-y-auto max-w-md w-full;
+  @apply h-[510px] bg-[#161616] border border-[#242424] rounded-lg overflow-y-auto max-w-md w-full;
 }
 
 .leaderboard-entry {
