@@ -21,28 +21,67 @@ function App () {
   const [showPopup, setShowPopup] = useState(false)
   const [popupMode, setPopupMode] = useState<null | number>(null)
   const [fadeOut, setFadeOut] = useState(false)
+  let activeDownloads = 0
+  const queue: (() => void)[] = []
+
+  function runNext() {
+    if (activeDownloads >= 3 || queue.length === 0) return
+    activeDownloads++
+    const next = queue.shift()
+    next?.()
+  }
 
   listen<string>('download-progress', (event) => {
-    const [urlEnc, progStr] = event.payload.split(':')
-    const url = atob(urlEnc)
+    const [versionName, progStr] = event.payload.split(':')
     const prog = Number(progStr)
+
     setDownloadProgress(prev => {
-      const i = prev.findIndex(d => d.version.downloadUrls[d.version.platforms.indexOf(platform())] === url)
+      const i = prev.findIndex(d => d.version.version === versionName)
       if (i === -1) return prev
-      if (prog >= 100) return prev.filter((_, j) => j !== i)
       const copy = [...prev]
       copy[i] = { ...copy[i], progress: prog }
       return copy
     })
   })
 
+  listen<string>('download-done', (event) => {
+    const versionName = event.payload
+    setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
+    activeDownloads--
+    runNext()
+  })
+
+  listen<string>('download-failed', (event) => {
+    const versionName = event.payload
+    setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
+    activeDownloads--
+    runNext()
+  })
+
   function downloadVersions(versions: LauncherVersion[]) {
-    const newDownloads = versions.map(v => new DownloadProgress(v, 0, false));
-    setDownloadProgress(prev => [...prev, ...newDownloads]);
+    const newDownloads = versions.map(v => new DownloadProgress(v, 0, false, true))
+    setDownloadProgress(prev => [...prev, ...newDownloads])
 
     newDownloads.forEach(download => {
-      invoke('download', { url: download.version.downloadUrls[download.version.platforms.indexOf(platform())], name: download.version.version });
-    });
+      const task = () => {
+        setDownloadProgress(prev => {
+          const i = prev.findIndex(d => d.version.version === download.version.version)
+          if (i === -1) return prev
+          const copy = [...prev]
+          copy[i] = { ...copy[i], queued: false }
+          return copy
+        })
+
+        invoke('download', {
+          url: download.version.downloadUrls[download.version.platforms.indexOf(platform())],
+          name: download.version.version,
+          executable: download.version.executables[download.version.platforms.indexOf(platform())]
+        })
+      }
+
+      queue.push(task)
+      runNext()
+    })
   }
 
   function handleOverlayClick (e: React.MouseEvent<HTMLDivElement>) {
@@ -126,9 +165,29 @@ function App () {
                     <p className='text-center mt-6'>Nothing here...</p>
                   ) : (
                     downloadProgress.map((v, i) => (
-                      <div key={i} className='popup-entry'>
+                      <div key={i} className='popup-entry flex flex-col justify-between'>
                         <p className='text-2xl'>Berry Dash v{v.version.displayName}</p>
-                        <p className='mt-[25px]'>{v.progress}% downloaded</p>
+                        <div className='mt-[25px] flex items-center justify-between'>
+                          {v.failed ? (
+                            <>
+                              <div className='flex items-center'>
+                                <span className='text-red-500'>Download failed</span>
+                                <button
+                                  className='button ml-30 mb-2'
+                                  onClick={() =>
+                                    setDownloadProgress((prev) => prev.filter((_, idx) => idx !== i))
+                                  }
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </>
+                          ) : v.queued ? (
+                            <span className='text-yellow-500'>Queued…</span>
+                          ) : (
+                            <span>Downloading: {v.progress}% done</span>
+                          )}
+                        </div>
                       </div>
                     ))
                   )}

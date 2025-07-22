@@ -1,15 +1,14 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-use base64::{Engine, engine::general_purpose};
 use futures_util::stream::StreamExt;
 use std::{
-    fs::{File, create_dir_all},
-    io::{BufReader, copy},
+    fs::{create_dir_all, File},
+    io::{copy, BufReader},
     path::PathBuf,
-    process::Command,
+    process::Command, time::Duration,
 };
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use tokio::{io::AsyncWriteExt, task::spawn_blocking};
+use tokio::{io::AsyncWriteExt, task::spawn_blocking, time::timeout};
 use zip::ZipArchive;
 
 #[cfg(target_os = "linux")]
@@ -50,10 +49,16 @@ async fn download(
     name: String,
     executable: String,
 ) -> Result<(), String> {
-    app.emit("download-started", &url).unwrap();
+    app.emit("download-started", &name).unwrap();
 
     let client = reqwest::Client::new();
-    let resp = client.get(&url).send().await.map_err(|e| e.to_string())?;
+    let resp = match client.get(&url).send().await {
+        Ok(r) => r,
+        Err(e) => {
+            app.emit("download-failed", &name).unwrap();
+            return Err(e.to_string());
+        }
+    };
     let total_size = resp.content_length().unwrap_or(0);
 
     let mut downloaded: u64 = 0;
@@ -73,9 +78,20 @@ async fn download(
     let _ = tokio::fs::create_dir_all(&game_path.join(&name)).await;
     let mut file = tokio::fs::File::create(download_part_path).await.unwrap();
 
-    while let Some(chunk) = stream.next().await {
-        let chunk = chunk.map_err(|e| e.to_string())?;
-        file.write_all(&chunk).await.map_err(|e| e.to_string())?;
+    while let Ok(Some(chunk_result)) = timeout(Duration::from_secs(5), stream.next()).await {
+        let chunk = match chunk_result {
+            Ok(c) => c,
+            Err(e) => {
+                app.emit("download-failed", &name).unwrap();
+                return Err(e.to_string());
+            }
+        };
+
+        if let Err(e) = file.write_all(&chunk).await {
+            app.emit("download-failed", &name).unwrap();
+            return Err(e.to_string());
+        }
+
         downloaded += chunk.len() as u64;
 
         let progress = if total_size > 0 {
@@ -83,12 +99,16 @@ async fn download(
         } else {
             0
         };
-        app.emit(
-            "download-progress",
-            format!("{}:{}", general_purpose::STANDARD.encode(&url), progress),
-        )
-        .unwrap();
+
+        app.emit("download-progress", format!("{}:{}", &name, progress)).unwrap();
     }
+
+    if total_size > 0 && downloaded < total_size {
+        app.emit("download-failed", &name).unwrap();
+        return Err("Download incomplete".into());
+    }
+
+    app.emit("download-done", &name).unwrap();
 
     tokio::fs::rename(
         downloads_path.join(format!("{}.part", name)),
@@ -110,7 +130,7 @@ async fn download(
         fs::set_permissions(executable_path, perms).unwrap();
     }
 
-    app.emit("download-finished", &url).unwrap();
+    app.emit("download-complete", &name).unwrap();
     Ok(())
 }
 
