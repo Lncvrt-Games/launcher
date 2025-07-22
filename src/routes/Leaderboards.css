@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+.leaderboard-container {
+  @apply flex justify-center;
+}
+
+.leaderboard-scroll {
+  @apply h-[85vh] bg-[#161616] border border-[#242424] rounded-lg overflow-y-auto max-w-md w-full;
+}
+
+.leaderboard-entry {
+  @apply flex justify-between items-center m-2 p-4 rounded-lg text-gray-200 text-lg transition-colors cursor-default bg-[#242424] hover:bg-[#323232] border border-[#484848] hover:border-[#565656];
+}
+
+.leaderboard-entry p.score {
+  @apply font-mono text-blue-500 text-lg;
+}

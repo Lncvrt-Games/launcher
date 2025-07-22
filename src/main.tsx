@@ -12,6 +12,7 @@ import { listen } from '@tauri-apps/api/event'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faRemove, faX } from '@fortawesome/free-solid-svg-icons'
 import '@fontsource/roboto'
+import Leaderboards from './routes/Leaderboards'
 
 function App () {
   const [hash, setHash] = useState(window.location.hash || '#installs')
@@ -108,6 +109,8 @@ function App () {
       return <Installs downloadProgress={downloadProgress} showPopup={showPopup} setShowPopup={setShowPopup} setPopupMode={setPopupMode} setFadeOut={setFadeOut} setSelectedVersionList={setSelectedVersionList} setVersionList={setVersionList} />
     } else if (hash === '#settings') {
       return <Settings />
+    } else if (hash === '#leaderboards') {
+      return <Leaderboards />
     }
     return null
   }

@@ -2,7 +2,7 @@ import './Sidebar.css'
 import Icon from '../Icon.png'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCog, faDownload, faServer } from '@fortawesome/free-solid-svg-icons'
+import { faCog, faDownload, faRankingStar, faServer } from '@fortawesome/free-solid-svg-icons'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { useState } from 'react'
 import { platform } from '@tauri-apps/plugin-os'
@@ -74,7 +74,8 @@ export default function Sidebar({ setShowPopup, setPopupMode, setFadeOut }: Side
       <nav className="nav-links">
         <a draggable={false} href="#installs" className={`link ${(window.location.hash || '#installs') === '#installs' ? 'active' : ''}`}><FontAwesomeIcon icon={faServer} className="mr-2" /> Installs</a>
         <a draggable={false} href="#settings" className={`link ${(window.location.hash || '#installs') === '#settings' ? 'active' : ''}`}><FontAwesomeIcon icon={faCog} className="mr-2" /> Settings</a>
-        <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-2" />Community</a>
+        <a draggable={false} href="#leaderboards" className={`link ${(window.location.hash || '#installs') === '#leaderboards' ? 'active' : ''}`}><FontAwesomeIcon icon={faRankingStar} className="mr-1" /> Leaderboards</a>
+        <a draggable={false} onClick={() => openUrl("https://berrydash.lncvrt.xyz/discord")} className="link"><FontAwesomeIcon icon={faDiscord} className="mr-1" /> Community</a>
       </nav>
       <div className='sidebar-downloads' onClick={() => { setPopupMode(1); setShowPopup(true); setFadeOut(false) }}>
         <p><FontAwesomeIcon icon={faDownload} /> Downloads</p>
