@@ -4,33 +4,30 @@ import axios from 'axios'
 import { LeaderboardEntry } from '../types/LeaderboardEntry'
 import { app } from '@tauri-apps/api'
 import { platform } from '@tauri-apps/plugin-os'
-import { decrypt, encrypt } from '../util/Encryption'
+import { decrypt } from '../util/Encryption'
 
 export default function Leaderboards () {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
+  const [loading, setLoading] = useState(true)
 
   async function refresh () {
+    setLoading(true)
     setLeaderboardData([])
     const launcherVersion = await app.getVersion()
     axios
-      .post(
-        'https://berrydash.lncvrt.xyz/database/getTopPlayers.php',
-        {
-          [encrypt('type')]: encrypt('0')
-        },
-        {
-          headers: {
-            Requester: 'BerryDashLauncher',
-            LauncherVersion: launcherVersion,
-            ClientPlatform: platform()
-          }
+      .get('https://berrydash.lncvrt.xyz/database/getTopPlayers.php', {
+        headers: {
+          Requester: 'BerryDashLauncher',
+          LauncherVersion: launcherVersion,
+          ClientPlatform: platform()
         }
-      )
+      })
       .then(res => {
         const decrypted = decrypt(res.data)
         setLeaderboardData(JSON.parse(decrypted))
       })
       .catch(e => console.error('Error fetching leaderboard data:', e))
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
@@ -41,7 +38,11 @@ export default function Leaderboards () {
     <div className='mx-4 mt-4'>
       <div className='flex justify-between items-center mb-4'>
         <p className='text-3xl'>Leaderboards</p>
-        <button className='button text-3xl' onClick={refresh}>
+        <button
+          className='button text-3xl'
+          onClick={refresh}
+          disabled={loading}
+        >
           Refresh
         </button>
       </div>
@@ -56,9 +57,13 @@ export default function Leaderboards () {
                 <p className='score'>{entry.value}</p>
               </div>
             ))
-          ) : (
+          ) : loading ? (
             <div className='flex justify-center items-center h-full'>
               <p className='text-3xl'>Loading...</p>
+            </div>
+          ) : (
+            <div className='flex justify-center items-center h-full'>
+              <p className='text-3xl'>No data...</p>
             </div>
           )}
         </div>
