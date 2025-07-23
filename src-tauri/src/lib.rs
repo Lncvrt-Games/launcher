@@ -10,6 +10,7 @@ use std::{
     process::Command,
     time::Duration,
 };
+use sysinfo::System;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use tauri_plugin_opener::OpenerExt;
@@ -46,6 +47,17 @@ pub async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> zip::result::Z
     })
     .await
     .map_err(|e| zip::result::ZipError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?
+}
+
+fn is_running_by_path(path: &PathBuf) -> bool {
+    let sys = System::new_all();
+    sys.processes().values().any(|proc| {
+        if let Some(exe) = proc.exe() {
+            exe == path
+        } else {
+            false
+        }
+    })
 }
 
 #[allow(unused_variables)]
@@ -192,6 +204,14 @@ fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
             .current_dir(&game_folder)
             .spawn()
     } else {
+        if is_running_by_path(&game_path) {
+            app.dialog()
+                .message(format!("The version {} is already running.", name))
+                .kind(MessageDialogKind::Error)
+                .title("Game already running")
+                .show(|_| {});
+            return;
+        }
         Command::new(&game_path).current_dir(&game_folder).spawn()
     };
 
