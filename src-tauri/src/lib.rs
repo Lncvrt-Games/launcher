@@ -1,8 +1,8 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-
 mod keys;
 
 use futures_util::stream::StreamExt;
+use keys::Keys;
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, Write, copy},
@@ -13,9 +13,9 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use tauri_plugin_opener::OpenerExt;
+use tauri_plugin_os::platform;
 use tokio::{io::AsyncWriteExt, task::spawn_blocking, time::timeout};
 use zip::ZipArchive;
-use keys::Keys;
 
 #[cfg(target_os = "linux")]
 use std::{fs, os::unix::fs::PermissionsExt};
@@ -48,6 +48,7 @@ pub async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> zip::result::Z
     .map_err(|e| zip::result::ZipError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?
 }
 
+#[allow(unused_variables)]
 #[tauri::command]
 async fn download(
     app: AppHandle,
@@ -75,7 +76,10 @@ async fn download(
 
     let download_part_path = downloads_path.join(format!("{}.part", name));
     let download_zip_path = downloads_path.join(format!("{}.zip", name));
-    let executable_path = game_path.join(&name).join(&executable);
+
+    if download_part_path.exists() {
+        let _ = tokio::fs::remove_file(&download_part_path).await;
+    }
 
     let _ = tokio::fs::create_dir_all(&downloads_path).await;
     if let Ok(true) = tokio::fs::try_exists(&game_path.join(name.clone())).await {
@@ -132,6 +136,7 @@ async fn download(
 
     #[cfg(target_os = "linux")]
     {
+        let executable_path = game_path.join(&name).join(&executable);
         let mut perms = fs::metadata(&executable_path).unwrap().permissions();
         perms.set_mode(0o755);
         fs::set_permissions(executable_path, perms).unwrap();
@@ -142,7 +147,7 @@ async fn download(
 }
 
 #[tauri::command]
-fn launch_game(app: AppHandle, name: String, executable: String) {
+fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
     let game_folder = app
         .path()
         .app_local_data_dir()
@@ -158,7 +163,39 @@ fn launch_game(app: AppHandle, name: String, executable: String) {
             .show(|_| {});
         return;
     }
-    match Command::new(&game_path).current_dir(&game_folder).spawn() {
+    let result = if wine && (platform() == "linux" || platform() == "macos") {
+        let wine_path_output = Command::new("which").arg("wine").output();
+        let wine_path = match wine_path_output {
+            Ok(output) if output.status.success() => {
+                let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if path.is_empty() {
+                    app.dialog()
+                    .message("Wine is not installed. Please install Wine to run this version of Berry Dash.")
+                    .kind(MessageDialogKind::Error)
+                    .title("Wine not found")
+                    .show(|_| {});
+                    return;
+                }
+                path
+            }
+            _ => {
+                app.dialog()
+                .message("Wine is not installed. Please install Wine to run this version of Berry Dash.")
+                .kind(MessageDialogKind::Error)
+                .title("Wine not found")
+                .show(|_| {});
+                return;
+            }
+        };
+        Command::new(wine_path)
+            .arg(&game_path)
+            .current_dir(&game_folder)
+            .spawn()
+    } else {
+        Command::new(&game_path).current_dir(&game_folder).spawn()
+    };
+
+    match result {
         Ok(_) => println!("Game launched successfully."),
         Err(e) => {
             app.dialog()

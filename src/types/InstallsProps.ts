@@ -1,5 +1,7 @@
 import { DownloadProgress } from './DownloadProgress'
 import { LauncherVersion } from './LauncherVersion'
+import { NormalConfig } from './NormalConfig'
+import { VersionsConfig } from './VersionsConfig'
 
 export type InstallsProps = {
   downloadProgress: DownloadProgress[]
@@ -9,4 +11,6 @@ export type InstallsProps = {
   setFadeOut: (v: boolean) => void
   setSelectedVersionList: (v: LauncherVersion[]) => void
   setVersionList: (v: null | LauncherVersion[]) => void
+  downloadedVersionsConfig: VersionsConfig | null
+  normalConfig: NormalConfig | null
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Setting } from '../componets/Setting'
-import { readNormalConfig, writeNormalConfig } from '../util/BazookaManager'
+import { writeNormalConfig } from '../util/BazookaManager'
 import { platform } from '@tauri-apps/plugin-os'
+import { SettingsProps } from '../types/SettingsProps'
 
-export default function Settings () {
+export default function Settings ({ normalConfig }: SettingsProps) {
   const [checkForNewVersionOnLoad, setCheckForNewVersionOnLoad] =
     useState(false)
   const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
@@ -12,11 +13,17 @@ export default function Settings () {
 
   useEffect(() => {
     ;(async () => {
-      const config = await readNormalConfig()
-      setCheckForNewVersionOnLoad(config.settings.checkForNewVersionOnLoad)
-      setUseWineOnUnixWhenNeeded(config.settings.useWineOnUnixWhenNeeded)
-      setAllowNotifications(config.settings.allowNotifications)
-      setLoaded(true)
+      while (normalConfig != null) {
+        setCheckForNewVersionOnLoad(
+          normalConfig.settings.checkForNewVersionOnLoad
+        )
+        setUseWineOnUnixWhenNeeded(
+          normalConfig.settings.useWineOnUnixWhenNeeded
+        )
+        setAllowNotifications(normalConfig.settings.allowNotifications)
+        setLoaded(true)
+        break
+      }
     })()
   }, [])
 
@@ -29,32 +36,42 @@ export default function Settings () {
             label='Check for new version on load'
             value={checkForNewVersionOnLoad}
             onChange={async () => {
-              setCheckForNewVersionOnLoad(!checkForNewVersionOnLoad)
-              const config = await readNormalConfig()
-              config.settings.checkForNewVersionOnLoad = !checkForNewVersionOnLoad
-              await writeNormalConfig(config)
+              while (normalConfig != null) {
+                setCheckForNewVersionOnLoad(!checkForNewVersionOnLoad)
+                normalConfig.settings.checkForNewVersionOnLoad =
+                  !checkForNewVersionOnLoad
+                await writeNormalConfig(normalConfig)
+                break
+              }
             }}
           />
           <Setting
             label='Allow sending notifications'
             value={allowNotifications}
             onChange={async () => {
-              setAllowNotifications(!allowNotifications)
-              const config = await readNormalConfig()
-              config.settings.allowNotifications = !allowNotifications
-              await writeNormalConfig(config)
+              while (normalConfig != null) {
+                setAllowNotifications(!allowNotifications)
+                normalConfig.settings.allowNotifications = !allowNotifications
+                await writeNormalConfig(normalConfig)
+                break
+              }
             }}
           />
           <Setting
             label='Use wine to launch Berry Dash when needed'
             value={useWineOnUnixWhenNeeded}
             onChange={async () => {
-              setUseWineOnUnixWhenNeeded(!useWineOnUnixWhenNeeded)
-              const config = await readNormalConfig()
-              config.settings.useWineOnUnixWhenNeeded = !useWineOnUnixWhenNeeded
-              await writeNormalConfig(config)
+              while (normalConfig != null) {
+                setUseWineOnUnixWhenNeeded(!useWineOnUnixWhenNeeded)
+                normalConfig.settings.useWineOnUnixWhenNeeded =
+                  !useWineOnUnixWhenNeeded
+                await writeNormalConfig(normalConfig)
+                break
+              }
             }}
-            className={platform() == 'linux' || platform() == 'macos' ? '' : 'hidden'}
+            className={
+              platform() == 'linux' || platform() == 'macos' ? '' : 'hidden'
+            }
           />
         </div>
       )}

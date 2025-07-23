@@ -1,10 +1,7 @@
-import { LauncherVersion } from './LauncherVersion'
+import { DownloadedVersion } from './DownloadedVersion'
 
 export class VersionsConfig {
-  constructor (
-    public version: string,
-    public list: LauncherVersion[] = []
-  ) {}
+  constructor (public version: string, public list: DownloadedVersion[] = []) {}
 
   static import (data: any) {
     const cfg = new VersionsConfig(data.version)

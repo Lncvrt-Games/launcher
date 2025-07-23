@@ -16,13 +16,16 @@ export default function Leaderboards () {
     setLeaderboardData([])
     try {
       const launcherVersion = await app.getVersion()
-      const response = await axios.get('https://berrydash.lncvrt.xyz/database/getTopPlayers.php', {
-        headers: {
-          Requester: 'BerryDashLauncher',
-          LauncherVersion: launcherVersion,
-          ClientPlatform: platform()
+      const response = await axios.get(
+        'https://berrydash.lncvrt.xyz/database/getTopPlayers.php',
+        {
+          headers: {
+            Requester: 'BerryDashLauncher',
+            LauncherVersion: launcherVersion,
+            ClientPlatform: platform()
+          }
         }
-      })
+      )
       const decrypted = await decrypt(response.data)
       setLeaderboardData(JSON.parse(decrypted))
     } catch (e) {
@@ -72,7 +75,7 @@ export default function Leaderboards () {
         <div className='leaderboard-scroll'>
           {leaderboardData.length ? (
             leaderboardData.map((entry, i) => (
-              <div key={entry.username} className='leaderboard-entry'>
+              <div key={i} className='leaderboard-entry'>
                 <p>
                   #{i + 1} {entry.username}
                 </p>

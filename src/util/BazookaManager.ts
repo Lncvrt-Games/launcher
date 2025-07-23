@@ -36,9 +36,7 @@ export async function readNormalConfig (): Promise<NormalConfig> {
     return new NormalConfig(version)
   }
   const config = await readTextFile('config.dat', options)
-  return NormalConfig.import(
-    JSON.parse(await decrypt(config, await getKey(2)))
-  )
+  return NormalConfig.import(JSON.parse(await decrypt(config, await getKey(2))))
 }
 
 export async function writeNormalConfig (data: NormalConfig) {
