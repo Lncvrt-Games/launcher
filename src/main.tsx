@@ -50,8 +50,15 @@ function App () {
   const [downloadedVersionsConfig, setDownloadedVersionsConfig] =
     useState<VersionsConfig | null>(null)
   const [normalConfig, setNormalConfig] = useState<NormalConfig | null>(null)
+  const [managingVersion, setManagingVersion] =
+    useState<DownloadedVersion | null>(null)
 
   function runNext () {
+    if (activeDownloads.current === 0 && queue.current.length === 0) {
+      setFadeOut(true)
+      setTimeout(() => setShowPopup(false), 200)
+      return
+    }
     if (activeDownloads.current >= 3 || queue.current.length === 0) return
     activeDownloads.current++
     const next = queue.current.shift()
@@ -133,10 +140,32 @@ function App () {
       )
     })
 
+    const unlistenUninstalled = listen<string>(
+      'version-uninstalled',
+      async event => {
+        const versionName = event.payload
+        setDownloadedVersionsConfig(prev => {
+          if (!prev) return prev
+          const updatedList = prev.list.filter(
+            v => v.version.version !== versionName
+          )
+          const updatedConfig = { ...prev, list: updatedList }
+          writeVersionsConfig(updatedConfig)
+          if (popupMode === 2) {
+            setManagingVersion(null)
+            setFadeOut(true)
+            setTimeout(() => setShowPopup(false), 200)
+          }
+          return updatedConfig
+        })
+      }
+    )
+
     return () => {
       unlistenProgress.then(f => f())
       unlistenDone.then(f => f())
       unlistenFailed.then(f => f())
+      unlistenUninstalled.then(f => f())
     }
   }, [downloadedVersionsConfig])
 
@@ -246,6 +275,7 @@ function App () {
           setVersionList={setVersionList}
           downloadedVersionsConfig={downloadedVersionsConfig}
           normalConfig={normalConfig}
+          setManagingVersion={setManagingVersion}
         />
       )
     } else if (hash === '#settings') {
@@ -411,6 +441,38 @@ function App () {
                     )}
                   </div>
                 </>
+              ) : popupMode === 2 ? (
+                managingVersion ? (
+                  <>
+                    <p className='text-xl text-center'>
+                      Manage version {managingVersion.version.displayName}
+                    </p>
+                    <div className='popup-content flex flex-col items-center justify-center gap-2 h-full'>
+                      <button
+                        className='button'
+                        onClick={() =>
+                          invoke('uninstall_version', {
+                            name: managingVersion.version.version
+                          })
+                        }
+                      >
+                        Uninstall
+                      </button>
+                      <button
+                        className='button'
+                        onClick={async () =>
+                          invoke('open_folder', {
+                            name: managingVersion.version.version
+                          })
+                        }
+                      >
+                        Open Folder
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p className='text-xl text-center'>No version selected</p>
+                )
               ) : null}
               {popupMode == 0 && versionList != null && (
                 <div className='flex justify-center'>

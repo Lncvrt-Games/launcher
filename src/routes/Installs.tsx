@@ -16,7 +16,8 @@ export default function Installs ({
   setSelectedVersionList,
   setVersionList,
   downloadedVersionsConfig,
-  normalConfig
+  normalConfig,
+  setManagingVersion
 }: InstallsProps) {
   useEffect(() => {
     if (!showPopup) return
@@ -49,7 +50,7 @@ export default function Installs ({
   return (
     <div className='mx-4 mt-4'>
       <div className='flex justify-between items-center mb-4'>
-        <p className='text-3xl'>Install</p>
+        <p className='text-3xl'>Installs</p>
         <button
           className='button text-3xl'
           onClick={() => {
@@ -75,10 +76,21 @@ export default function Installs ({
                     </p>
                     <p className='text-gray-400 text-md'>
                       Installed{' '}
-                      {format(new Date(entry.installDate), 'yyyy/MM/dd')}
+                      {format(new Date(entry.installDate), 'MM/dd/yyyy')}
                     </p>
                   </div>
                   <div className='flex flex-row items-center gap-2'>
+                    <button
+                      className='button'
+                      onClick={async () => {
+                        setManagingVersion(entry)
+                        setPopupMode(2)
+                        setShowPopup(true)
+                        setFadeOut(false)
+                      }}
+                    >
+                      Manage
+                    </button>
                     <button
                       className='button'
                       onClick={async () => {

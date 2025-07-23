@@ -1,3 +1,4 @@
+import { DownloadedVersion } from './DownloadedVersion'
 import { DownloadProgress } from './DownloadProgress'
 import { LauncherVersion } from './LauncherVersion'
 import { NormalConfig } from './NormalConfig'
@@ -13,4 +14,5 @@ export type InstallsProps = {
   setVersionList: (v: null | LauncherVersion[]) => void
   downloadedVersionsConfig: VersionsConfig | null
   normalConfig: NormalConfig | null
+  setManagingVersion: (v: DownloadedVersion | null) => void
 }

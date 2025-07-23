@@ -259,6 +259,49 @@ fn get_keys_config(key: i8) -> String {
     }
 }
 
+#[tauri::command]
+async fn uninstall_version(app: AppHandle, name: String) {
+    let game_path = app
+        .path()
+        .app_local_data_dir()
+        .unwrap()
+        .join("game")
+        .join(&name);
+    if game_path.exists() {
+        if let Err(_) = tokio::fs::remove_dir_all(&game_path).await {
+            app.emit("version-failed", &name).unwrap();
+        } else {
+            app.emit("version-uninstalled", &name).unwrap();
+        }
+    } else {
+        app.emit("version-uninstalled", &name).unwrap();
+    }
+}
+
+#[tauri::command]
+async fn open_folder(app: AppHandle, name: String) {
+    let game_path = app
+        .path()
+        .app_local_data_dir()
+        .unwrap()
+        .join("game")
+        .join(&name);
+    if game_path.exists() {
+        app.opener()
+            .open_path(game_path.to_string_lossy(), None::<&str>)
+            .unwrap();
+    } else {
+        app.dialog()
+            .message(format!(
+                "Game folder \"{}\" not found.",
+                game_path.display()
+            ))
+            .kind(MessageDialogKind::Error)
+            .title("Folder not found")
+            .show(|_| {});
+    }
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     tauri::Builder::default()
@@ -278,7 +321,9 @@ pub fn run() {
             download,
             launch_game,
             download_leaderboard,
-            get_keys_config
+            get_keys_config,
+            uninstall_version,
+            open_folder
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]
