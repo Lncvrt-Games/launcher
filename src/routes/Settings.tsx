@@ -69,9 +69,7 @@ export default function Settings ({ normalConfig }: SettingsProps) {
                 break
               }
             }}
-            className={
-              platform() == 'linux' || platform() == 'macos' ? '' : 'hidden'
-            }
+            className={platform() == 'linux' ? '' : 'hidden'}
           />
         </div>
       )}

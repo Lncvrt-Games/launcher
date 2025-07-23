@@ -178,7 +178,7 @@ function App () {
 
       newDownloads.forEach(download => {
         let plat = p
-        if ((p === 'macos' || p === 'linux') && useWine) {
+        if (p === 'linux' && useWine) {
           if (
             !download.version.platforms.includes(p) &&
             download.version.platforms.includes('windows')

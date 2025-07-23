@@ -175,7 +175,7 @@ fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
             .show(|_| {});
         return;
     }
-    let result = if wine && (platform() == "linux" || platform() == "macos") {
+    let result = if wine && platform() == "linux" {
         let wine_path_output = Command::new("which").arg("wine").output();
         let wine_path = match wine_path_output {
             Ok(output) if output.status.success() => {
