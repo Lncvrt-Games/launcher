@@ -151,11 +151,9 @@ function App () {
           )
           const updatedConfig = { ...prev, list: updatedList }
           writeVersionsConfig(updatedConfig)
-          if (popupMode === 2) {
-            setManagingVersion(null)
-            setFadeOut(true)
-            setTimeout(() => setShowPopup(false), 200)
-          }
+          setManagingVersion(null)
+          setFadeOut(true)
+          setTimeout(() => setShowPopup(false), 200)
           return updatedConfig
         })
       }
