@@ -92,7 +92,7 @@ export default function Installs ({
                       Manage
                     </button>
                     <button
-                      className='button'
+                      className='button button-green'
                       onClick={async () => {
                         let plat = platform()
                         let willUseWine = false

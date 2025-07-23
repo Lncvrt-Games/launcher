@@ -9,6 +9,10 @@ body {
   @apply bg-[#0a6ec8] hover:bg-[#1361ad] disabled:bg-[#124c7e] disabled:hover:bg-[#1b3f63] disabled:text-[#bdbdbd] disabled:hover:text-[#e6e6e6] rounded-md cursor-pointer text-[16px] py-1.5 px-3 transition-colors duration-[0.25s];
 }
 
+.button-green {
+  @apply bg-[#28a745] hover:bg-[#218838] disabled:bg-[#1c7430] disabled:hover:bg-[#1a5c24] disabled:text-[#bdbdbd] disabled:hover:text-[#e6e6e6];
+}
+
 ::-webkit-scrollbar {
   @apply w-2;
 }
