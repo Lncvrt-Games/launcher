@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+.setting-checkbox-wrapper {
+  @apply relative w-5 h-5;
+}
+
+.setting-checkbox {
+  @apply appearance-none w-full h-full border-2 border-[#484848] rounded-md bg-[#242424] transition-colors duration-200 cursor-pointer;
+}
+
+.setting-checkbox:checked {
+  @apply bg-blue-500 border-blue-600;
+}
+
+.fa-check-icon {
+  @apply absolute top-1/2 left-1/2 text-white text-[11px] pointer-events-none -translate-x-2/4 -translate-y-2/4;
+}

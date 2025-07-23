@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import Installs from './routes/Installs'
 import Settings from './routes/Settings'
@@ -14,6 +14,7 @@ import { faAdd, faRemove, faX } from '@fortawesome/free-solid-svg-icons'
 import '@fontsource/roboto'
 import Leaderboards from './routes/Leaderboards'
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification'
+import { readNormalConfig, readVersionsConfig, writeVersionsConfig } from './util/BazookaManager'
 
 function App () {
   const [hash, setHash] = useState(window.location.hash || '#installs')
@@ -23,13 +24,13 @@ function App () {
   const [showPopup, setShowPopup] = useState(false)
   const [popupMode, setPopupMode] = useState<null | number>(null)
   const [fadeOut, setFadeOut] = useState(false)
-  let activeDownloads = 0
-  const queue: (() => void)[] = []
+  const activeDownloads = useRef(0)
+  const queue = useRef<(() => void)[]>([])
 
   function runNext() {
-    if (activeDownloads >= 3 || queue.length === 0) return
-    activeDownloads++
-    const next = queue.shift()
+    if (activeDownloads.current >= 3 || queue.current.length === 0) return
+    activeDownloads.current++
+    const next = queue.current.shift()
     next?.()
   }
 
@@ -49,8 +50,17 @@ function App () {
 
     const unlistenDone = listen<string>('download-done', async (event) => {
       const versionName = event.payload
-      setDownloadProgress(prev => prev.filter(d => d.version.version !== versionName))
-      activeDownloads--
+      setDownloadProgress(prev => {
+        const downloaded = prev.find(d => d.version.version === versionName)
+        if (downloaded) {
+          readVersionsConfig().then(cfg => {
+            cfg.list.push(downloaded.version)
+            writeVersionsConfig(cfg)
+          })
+        }
+        return prev.filter(d => d.version.version !== versionName)
+      })
+      activeDownloads.current--
       runNext()
       if (downloadProgress.length === 0) {
         await notifyUser('Downloads Complete', 'All downloads have completed.')
@@ -64,7 +74,7 @@ function App () {
           d.version.version === versionName ? { ...d, failed: true } : d
         )
       )
-      activeDownloads--
+      activeDownloads.current--
       runNext()
       await notifyUser('Download Failed', `The download for version ${versionName} has failed.`)
     })
@@ -76,11 +86,33 @@ function App () {
     }
   }, [])
 
-  function downloadVersions(versions: LauncherVersion[]) {
+  async function downloadVersions(versions: LauncherVersion[]) {
+    const config = await readNormalConfig()
+    const useWine = config.settings.useWineOnUnixWhenNeeded
+    const p = platform()
     const newDownloads = versions.map(v => new DownloadProgress(v, 0, false, true))
     setDownloadProgress(prev => [...prev, ...newDownloads])
 
     newDownloads.forEach(download => {
+      let plat = p
+      if ((p === 'macos' || p === 'linux') && useWine) {
+        if (!download.version.platforms.includes(p) && download.version.platforms.includes('windows')) {
+          plat = 'windows'
+        }
+      }
+      const idx = download.version.platforms.indexOf(plat)
+      const url = download.version.downloadUrls[idx]
+      const exe = download.version.executables[idx]
+
+      if (!url) {
+        setDownloadProgress(prev =>
+          prev.map(d =>
+            d.version.version === download.version.version ? { ...d, failed: true } : d
+          )
+        )
+        return
+      }
+
       const task = () => {
         setDownloadProgress(prev => {
           const i = prev.findIndex(d => d.version.version === download.version.version)
@@ -91,13 +123,13 @@ function App () {
         })
 
         invoke('download', {
-          url: download.version.downloadUrls[download.version.platforms.indexOf(platform())],
+          url,
           name: download.version.version,
-          executable: download.version.executables[download.version.platforms.indexOf(platform())]
+          executable: exe
         })
       }
 
-      queue.push(task)
+      queue.current.push(task)
       runNext()
     })
   }
@@ -110,6 +142,8 @@ function App () {
   }
 
   async function notifyUser(title: string, body: string) {
+    const config = await readNormalConfig()
+    if (!config.settings.allowNotifications) return
     let permissionGranted = await isPermissionGranted();
     if (!permissionGranted) {
       const permission = await requestPermission();
