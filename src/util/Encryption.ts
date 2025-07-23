@@ -1,7 +1,11 @@
 import CryptoJS from 'crypto-js'
-import { Keys } from '../enums/Keys'
+import { getKey } from './KeysHelper'
 
-export function encrypt (plainText: string, key: string = Keys.SERVER_SEND_TRANSFER_KEY): string {
+export async function encrypt (
+  plainText: string,
+  key?: string
+): Promise<string> {
+  if (!key) key = await getKey(1)
   const iv = CryptoJS.lib.WordArray.random(16)
   const encrypted = CryptoJS.AES.encrypt(
     plainText,
@@ -16,7 +20,8 @@ export function encrypt (plainText: string, key: string = Keys.SERVER_SEND_TRANS
   return CryptoJS.enc.Base64.stringify(combined)
 }
 
-export function decrypt (dataB64: string, key: string = Keys.SERVER_RECEIVE_TRANSFER_KEY): string {
+export async function decrypt (dataB64: string, key?: string): Promise<string> {
+  if (!key) key = await getKey(0)
   const data = CryptoJS.enc.Base64.parse(dataB64)
   const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16)
   const ciphertext = CryptoJS.lib.WordArray.create(
@@ -35,6 +40,6 @@ export function decrypt (dataB64: string, key: string = Keys.SERVER_RECEIVE_TRAN
     }
   )
   const result = decrypted.toString(CryptoJS.enc.Utf8)
-  if (!result) throw new Error(encrypt('-997'))
+  if (!result) throw new Error(await encrypt('-997'))
   return result
 }

@@ -9,8 +9,8 @@ import {
   writeFile
 } from '@tauri-apps/plugin-fs'
 import { decrypt, encrypt } from './Encryption'
-import { Keys } from '../enums/Keys'
 import { VersionsConfig } from '../types/VersionsConfig'
+import { getKey } from './KeysHelper'
 
 export async function readNormalConfig (): Promise<NormalConfig> {
   const version = await app.getVersion()
@@ -26,9 +26,9 @@ export async function readNormalConfig (): Promise<NormalConfig> {
     const file = await create('config.dat', options)
     await file.write(
       new TextEncoder().encode(
-        encrypt(
+        await encrypt(
           JSON.stringify(new NormalConfig(version)),
-          Keys.CONFIG_ENCRYPTION_KEY
+          await getKey(2)
         )
       )
     )
@@ -37,7 +37,7 @@ export async function readNormalConfig (): Promise<NormalConfig> {
   }
   const config = await readTextFile('config.dat', options)
   return NormalConfig.import(
-    JSON.parse(decrypt(config, Keys.CONFIG_ENCRYPTION_KEY))
+    JSON.parse(await decrypt(config, await getKey(2)))
   )
 }
 
@@ -54,7 +54,7 @@ export async function writeNormalConfig (data: NormalConfig) {
     const file = await create('config.dat', options)
     await file.write(
       new TextEncoder().encode(
-        encrypt(JSON.stringify(data), Keys.CONFIG_ENCRYPTION_KEY)
+        await encrypt(JSON.stringify(data), await getKey(2))
       )
     )
     await file.close()
@@ -62,7 +62,7 @@ export async function writeNormalConfig (data: NormalConfig) {
     await writeFile(
       'config.dat',
       new TextEncoder().encode(
-        encrypt(JSON.stringify(data), Keys.CONFIG_ENCRYPTION_KEY)
+        await encrypt(JSON.stringify(data), await getKey(2))
       ),
       options
     )
@@ -83,9 +83,9 @@ export async function readVersionsConfig (): Promise<VersionsConfig> {
     const file = await create('versions.dat', options)
     await file.write(
       new TextEncoder().encode(
-        encrypt(
+        await encrypt(
           JSON.stringify(new VersionsConfig(version)),
-          Keys.VERSIONS_ENCRYPTION_KEY
+          await getKey(3)
         )
       )
     )
@@ -94,7 +94,7 @@ export async function readVersionsConfig (): Promise<VersionsConfig> {
   }
   const config = await readTextFile('versions.dat', options)
   return VersionsConfig.import(
-    JSON.parse(decrypt(config, Keys.VERSIONS_ENCRYPTION_KEY))
+    JSON.parse(await decrypt(config, await getKey(3)))
   )
 }
 
@@ -111,7 +111,7 @@ export async function writeVersionsConfig (data: VersionsConfig) {
     const file = await create('versions.dat', options)
     await file.write(
       new TextEncoder().encode(
-        encrypt(JSON.stringify(data), Keys.VERSIONS_ENCRYPTION_KEY)
+        await encrypt(JSON.stringify(data), await getKey(3))
       )
     )
     await file.close()
@@ -119,7 +119,7 @@ export async function writeVersionsConfig (data: VersionsConfig) {
     await writeFile(
       'versions.dat',
       new TextEncoder().encode(
-        encrypt(JSON.stringify(data), Keys.VERSIONS_ENCRYPTION_KEY)
+        await encrypt(JSON.stringify(data), await getKey(3))
       ),
       options
     )

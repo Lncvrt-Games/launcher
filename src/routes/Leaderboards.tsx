@@ -14,21 +14,22 @@ export default function Leaderboards () {
   async function refresh () {
     setLoading(true)
     setLeaderboardData([])
-    const launcherVersion = await app.getVersion()
-    axios
-      .get('https://berrydash.lncvrt.xyz/database/getTopPlayers.php', {
+    try {
+      const launcherVersion = await app.getVersion()
+      const response = await axios.get('https://berrydash.lncvrt.xyz/database/getTopPlayers.php', {
         headers: {
           Requester: 'BerryDashLauncher',
           LauncherVersion: launcherVersion,
           ClientPlatform: platform()
         }
       })
-      .then(res => {
-        const decrypted = decrypt(res.data)
-        setLeaderboardData(JSON.parse(decrypted))
-      })
-      .catch(e => console.error('Error fetching leaderboard data:', e))
-      .finally(() => setLoading(false))
+      const decrypted = await decrypt(response.data)
+      setLeaderboardData(JSON.parse(decrypted))
+    } catch (e) {
+      console.error('Error fetching leaderboard data:', e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   function downloadLeaderboard () {

@@ -1,4 +1,7 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+
+mod keys;
+
 use futures_util::stream::StreamExt;
 use std::{
     fs::{File, create_dir_all},
@@ -12,6 +15,7 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use tauri_plugin_opener::OpenerExt;
 use tokio::{io::AsyncWriteExt, task::spawn_blocking, time::timeout};
 use zip::ZipArchive;
+use keys::Keys;
 
 #[cfg(target_os = "linux")]
 use std::{fs, os::unix::fs::PermissionsExt};
@@ -207,6 +211,17 @@ fn download_leaderboard(app: AppHandle, content: String) {
     })
 }
 
+#[tauri::command]
+fn get_keys_config(key: i8) -> String {
+    match key {
+        0 => Keys::SERVER_RECEIVE_TRANSFER_KEY.to_string(),
+        1 => Keys::SERVER_SEND_TRANSFER_KEY.to_string(),
+        2 => Keys::CONFIG_ENCRYPTION_KEY.to_string(),
+        3 => Keys::VERSIONS_ENCRYPTION_KEY.to_string(),
+        _ => "".to_string(),
+    }
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     tauri::Builder::default()
@@ -225,7 +240,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             download,
             launch_game,
-            download_leaderboard
+            download_leaderboard,
+            get_keys_config
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]
