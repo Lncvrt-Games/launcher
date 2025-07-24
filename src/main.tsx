@@ -300,7 +300,7 @@ function App () {
           </button>
         </div>
       ) : (
-        <p className='text-8xl text-center'>{loadingText}</p>
+        <p className='text-7xl text-center'>{loadingText}</p>
       )}
     </div>
   ) : (
