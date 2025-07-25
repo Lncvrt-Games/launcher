@@ -466,6 +466,26 @@ function App () {
                       >
                         Open Folder
                       </button>
+                      <button
+                        className='button'
+                        style={{
+                          display: platform() == 'macos' ? 'block' : 'none'
+                        }}
+                        onClick={async () => {
+                          const exe =
+                            managingVersion.version.executables[
+                              managingVersion.version.platforms.indexOf(
+                                platform()
+                              )
+                            ]
+                          await invoke('fix_mac_permissions', {
+                            name: managingVersion.version.version,
+                            executable: exe
+                          })
+                        }}
+                      >
+                        Fix permissions
+                      </button>
                     </div>
                   </>
                 ) : (

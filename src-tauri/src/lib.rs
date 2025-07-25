@@ -144,19 +144,34 @@ async fn download(
         .await
         .unwrap();
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(target_os = "linux")]
     {
         let executable_path = game_path.join(&name).join(&executable);
-        #[cfg(target_os = "linux")]
-        {
-            let mut perms = fs::metadata(&executable_path).unwrap().permissions();
-            perms.set_mode(0o755);
-            fs::set_permissions(executable_path, perms).unwrap();
-        }
-        #[cfg(target_os = "macos")]
-        {
-            let _ = Command::new(format!("osascript -e 'do shell script chmod 755 {} with prompt Administrator is required to make Berry Dash v{} executable with administrator privileges'", &executable_path.to_string_lossy(), &name)).spawn();
-        }
+        let mut perms = fs::metadata(&executable_path).unwrap().permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(executable_path, perms).unwrap();
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let macos_app_path = &game_path
+            .join(&name)
+            .join(&executable)
+            .join("Contents")
+            .join("MacOS")
+            .join(
+                &executable
+                    .chars()
+                    .take(&executable.chars().count() - 4)
+                    .collect::<String>(),
+            );
+        let _ = Command::new("osascript")
+            .arg("-e")
+            .arg(format!(
+                "do shell script \"chmod 755 \\\"{}\\\"\" with prompt \"Administrator is required to make Berry Dash v{} executable\" with administrator privileges",
+                macos_app_path.to_string_lossy(),
+                name
+            ))
+            .spawn();
     }
 
     app.emit("download-done", &name).unwrap();
@@ -334,6 +349,36 @@ async fn open_folder(app: AppHandle, name: String) {
     }
 }
 
+#[tauri::command]
+fn fix_mac_permissions(app: AppHandle, name: String, executable: String) {
+    #[cfg(target_os = "macos")]
+    {
+        let macos_app_path = app
+            .path()
+            .app_local_data_dir()
+            .unwrap()
+            .join("game")
+            .join(&name)
+            .join(&executable)
+            .join("Contents")
+            .join("MacOS")
+            .join(
+                &executable
+                    .chars()
+                    .take(&executable.chars().count() - 4)
+                    .collect::<String>(),
+            );
+        let _ = Command::new("osascript")
+            .arg("-e")
+            .arg(format!(
+                "do shell script \"chmod 755 \\\"{}\\\"\" with prompt \"Administrator is required to make Berry Dash v{} executable\" with administrator privileges",
+                macos_app_path.to_string_lossy(),
+                name
+            ))
+            .spawn();
+    }
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     tauri::Builder::default()
@@ -355,7 +400,8 @@ pub fn run() {
             download_leaderboard,
             get_keys_config,
             uninstall_version,
-            open_folder
+            open_folder,
+            fix_mac_permissions
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]
