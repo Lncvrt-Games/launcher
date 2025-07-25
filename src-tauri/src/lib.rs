@@ -144,12 +144,19 @@ async fn download(
         .await
         .unwrap();
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
         let executable_path = game_path.join(&name).join(&executable);
-        let mut perms = fs::metadata(&executable_path).unwrap().permissions();
-        perms.set_mode(0o755);
-        fs::set_permissions(executable_path, perms).unwrap();
+        #[cfg(target_os = "linux")]
+        {
+            let mut perms = fs::metadata(&executable_path).unwrap().permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(executable_path, perms).unwrap();
+        }
+        #[cfg(target_os = "macos")]
+        {
+            let _ = Command::new(format!("osascript -e 'do shell script chmod 755 {} with prompt Administrator is required to make Berry Dash v{} executable with administrator privileges'", &executable_path.to_string_lossy(), &name)).spawn();
+        }
     }
 
     app.emit("download-done", &name).unwrap();
@@ -210,7 +217,14 @@ fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
                 .show(|_| {});
             return;
         }
-        Command::new(&game_path).current_dir(&game_folder).spawn()
+        if platform() == "macos" {
+            Command::new("open")
+                .arg(&game_path)
+                .current_dir(&game_folder)
+                .spawn()
+        } else {
+            Command::new(&game_path).current_dir(&game_folder).spawn()
+        }
     };
 
     match result {
