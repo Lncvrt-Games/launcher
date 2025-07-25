@@ -131,8 +131,6 @@ async fn download(
         return Err("Download incomplete".into());
     }
 
-    app.emit("download-done", &name).unwrap();
-
     tokio::fs::rename(
         downloads_path.join(format!("{}.part", name)),
         download_zip_path.clone(),
@@ -154,7 +152,7 @@ async fn download(
         fs::set_permissions(executable_path, perms).unwrap();
     }
 
-    app.emit("download-complete", &name).unwrap();
+    app.emit("download-done", &name).unwrap();
     Ok(())
 }
 
