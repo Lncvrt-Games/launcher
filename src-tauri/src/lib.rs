@@ -1,4 +1,3 @@
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 mod keys;
 
 use futures_util::stream::StreamExt;
@@ -379,6 +378,7 @@ fn fix_mac_permissions(app: AppHandle, name: String, executable: String) {
     }
 }
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_variables)]
     tauri::Builder::default()
