@@ -348,6 +348,7 @@ async fn open_folder(app: AppHandle, name: String) {
     }
 }
 
+#[allow(unused_variables)]
 #[tauri::command]
 fn fix_mac_permissions(app: AppHandle, name: String, executable: String) {
     #[cfg(target_os = "macos")]
