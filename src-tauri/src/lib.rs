@@ -379,6 +379,11 @@ fn fix_mac_permissions(app: AppHandle, name: String, executable: String) {
     }
 }
 
+#[tauri::command]
+fn windows_rounded_corners(app: AppHandle, enabled: bool) {
+    let _ = app.get_webview_window("main").unwrap().set_shadow(enabled);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_variables)]
@@ -402,7 +407,8 @@ pub fn run() {
             get_keys_config,
             uninstall_version,
             open_folder,
-            fix_mac_permissions
+            fix_mac_permissions,
+            windows_rounded_corners
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]

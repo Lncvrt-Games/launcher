@@ -3,12 +3,15 @@ import { Setting } from '../componets/Setting'
 import { writeNormalConfig } from '../util/BazookaManager'
 import { platform } from '@tauri-apps/plugin-os'
 import { SettingsProps } from '../types/SettingsProps'
+import { invoke } from '@tauri-apps/api/core'
 
 export default function Settings ({ normalConfig }: SettingsProps) {
   const [checkForNewVersionOnLoad, setCheckForNewVersionOnLoad] =
     useState(false)
-  const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
   const [allowNotifications, setAllowNotifications] = useState(false)
+  const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
+  const [useWindowsRoundedCorners, setUseWindowsRoundedCorners] =
+    useState(false)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -21,6 +24,9 @@ export default function Settings ({ normalConfig }: SettingsProps) {
           normalConfig.settings.useWineOnUnixWhenNeeded
         )
         setAllowNotifications(normalConfig.settings.allowNotifications)
+        setUseWindowsRoundedCorners(
+          normalConfig.settings.useWindowsRoundedCorners
+        )
         setLoaded(true)
         break
       }
@@ -70,6 +76,23 @@ export default function Settings ({ normalConfig }: SettingsProps) {
               }
             }}
             className={platform() == 'linux' ? '' : 'hidden'}
+          />
+          <Setting
+            label='Use rounded corners (if supported)'
+            value={useWindowsRoundedCorners}
+            onChange={async () => {
+              while (normalConfig != null) {
+                setUseWindowsRoundedCorners(!useWindowsRoundedCorners)
+                normalConfig.settings.useWindowsRoundedCorners =
+                  !useWindowsRoundedCorners
+                await writeNormalConfig(normalConfig)
+                invoke('windows_rounded_corners', {
+                  enabled: !useWindowsRoundedCorners
+                })
+                break
+              }
+            }}
+            className={platform() == 'windows' ? '' : 'hidden'}
           />
         </div>
       )}

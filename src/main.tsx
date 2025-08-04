@@ -86,6 +86,11 @@ function App () {
       const versionsConfig = await readVersionsConfig()
       setDownloadedVersionsConfig(versionsConfig)
       setNormalConfig(normalConfig)
+      if (platform() == 'windows') {
+        invoke('windows_rounded_corners', {
+          enabled: normalConfig.settings.useWindowsRoundedCorners
+        })
+      }
       setLoading(false)
     })()
   }, [])
