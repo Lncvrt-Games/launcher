@@ -1,11 +1,13 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { Setting } from '../componets/Setting'
 import { writeNormalConfig } from '../util/BazookaManager'
 import { platform } from '@tauri-apps/plugin-os'
-import { SettingsProps } from '../types/SettingsProps'
 import { invoke } from '@tauri-apps/api/core'
+import { useGlobal } from '../GlobalProvider'
 
-export default function Settings ({ normalConfig }: SettingsProps) {
+export default function Settings () {
   const [checkForNewVersionOnLoad, setCheckForNewVersionOnLoad] =
     useState(false)
   const [allowNotifications, setAllowNotifications] = useState(false)
@@ -13,6 +15,7 @@ export default function Settings ({ normalConfig }: SettingsProps) {
   const [useWindowsRoundedCorners, setUseWindowsRoundedCorners] =
     useState(false)
   const [loaded, setLoaded] = useState(false)
+  const { normalConfig } = useGlobal()
 
   useEffect(() => {
     ;(async () => {
@@ -31,7 +34,7 @@ export default function Settings ({ normalConfig }: SettingsProps) {
         break
       }
     })()
-  }, [])
+  }, [normalConfig])
 
   return (
     <>

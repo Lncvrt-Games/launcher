@@ -1,3 +1,5 @@
+'use client'
+
 import './Sidebar.css'
 import Icon from '../Icon.png'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -12,16 +14,17 @@ import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { useState } from 'react'
 import { platform } from '@tauri-apps/plugin-os'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { SidebarProps } from '../types/SidebarProps'
+import { useGlobal } from '../GlobalProvider'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
-export default function Sidebar ({
-  setShowPopup,
-  setPopupMode,
-  setFadeOut,
-  downloadProgress
-}: SidebarProps) {
+export default function Sidebar () {
   const [rot, setRot] = useState(0)
   const [dir, setDir] = useState(1)
+  const { setShowPopup, setPopupMode, setFadeOut, downloadProgress } =
+    useGlobal()
+  const pathname = usePathname()
 
   return (
     <aside className='sidebar'>
@@ -43,11 +46,12 @@ export default function Sidebar ({
         }}
       ></div>
       <div className='logo'>
-        <img
+        <Image
           draggable={false}
           src={Icon}
           width={48}
           height={48}
+          alt=''
           style={{
             transform: `rotate(${rot}deg)`,
             transition: 'transform 0.3s ease',
@@ -84,39 +88,27 @@ export default function Sidebar ({
         />
       </div>
       <nav className='nav-links'>
-        <a
+        <Link
           draggable={false}
-          href='#installs'
-          className={`link ${
-            (window.location.hash || '#installs') === '#installs'
-              ? 'active'
-              : ''
-          }`}
+          href='/'
+          className={`link ${pathname === '/' ? 'active' : ''}`}
         >
           <FontAwesomeIcon icon={faServer} className='mr-1' /> Installs
-        </a>
-        <a
+        </Link>
+        <Link
           draggable={false}
-          href='#settings'
-          className={`link ${
-            (window.location.hash || '#installs') === '#settings'
-              ? 'active'
-              : ''
-          }`}
+          href='/settings'
+          className={`link ${pathname === '/settings' ? 'active' : ''}`}
         >
           <FontAwesomeIcon icon={faCog} className='mr-1' /> Settings
-        </a>
-        <a
+        </Link>
+        <Link
           draggable={false}
-          href='#leaderboards'
-          className={`link ${
-            (window.location.hash || '#installs') === '#leaderboards'
-              ? 'active'
-              : ''
-          }`}
+          href='/leaderboards'
+          className={`link ${pathname === '/leaderboards' ? 'active' : ''}`}
         >
           <FontAwesomeIcon icon={faRankingStar} className='mr-1' /> Leaderboards
-        </a>
+        </Link>
         <a
           draggable={false}
           onClick={() => openUrl('https://berrydash.lncvrt.xyz/discord')}

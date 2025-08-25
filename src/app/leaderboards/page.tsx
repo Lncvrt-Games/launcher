@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import './Leaderboards.css'
 import axios from 'axios'

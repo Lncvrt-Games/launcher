@@ -37,8 +37,10 @@ export async function readNormalConfig (): Promise<NormalConfig> {
       return new NormalConfig(version)
     }
     const config = await readTextFile('config.dat', options)
-    return NormalConfig.import(JSON.parse(await decrypt(config, await getKey(2))))
-  } catch (_) {
+    return NormalConfig.import(
+      JSON.parse(await decrypt(config, await getKey(2)))
+    )
+  } catch {
     return new NormalConfig(version)
   }
 }
@@ -99,7 +101,7 @@ export async function readVersionsConfig (): Promise<VersionsConfig> {
     return VersionsConfig.import(
       JSON.parse(await decrypt(config, await getKey(3)))
     )
-  } catch (_) {
+  } catch {
     return new VersionsConfig(version)
   }
 }

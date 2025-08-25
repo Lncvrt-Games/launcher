@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 .setting-checkbox-wrapper {
   @apply relative w-5 h-5;

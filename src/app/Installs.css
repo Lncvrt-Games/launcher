@@ -1,17 +1,17 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-.leaderboard-container {
+.downloads-container {
   @apply flex justify-center;
 }
 
-.leaderboard-scroll {
-  @apply h-[510px] bg-[#161616] border border-[#242424] rounded-lg overflow-y-auto max-w-md w-full;
+.downloads-scroll {
+  @apply h-[515px] bg-[#161616] border border-[#242424] rounded-lg overflow-y-auto w-full;
 }
 
-.leaderboard-entry {
+.downloads-entry {
   @apply flex justify-between items-center m-2 p-4 rounded-lg text-gray-200 text-lg transition-colors cursor-default bg-[#242424] hover:bg-[#323232] border border-[#484848] hover:border-[#565656];
 }
 
-.leaderboard-entry p.score {
+.downloads-entry p.score {
   @apply font-mono text-blue-500 text-lg;
 }

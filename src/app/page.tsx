@@ -1,24 +1,28 @@
+'use client'
+
 import { useEffect } from 'react'
 import axios from 'axios'
-import { InstallsProps } from '../types/InstallsProps'
 import { platform } from '@tauri-apps/plugin-os'
 import './Installs.css'
 import { format } from 'date-fns'
 import { invoke } from '@tauri-apps/api/core'
 import { message } from '@tauri-apps/plugin-dialog'
+import { useGlobal } from './GlobalProvider'
 
-export default function Installs ({
-  downloadProgress,
-  showPopup,
-  setShowPopup,
-  setPopupMode,
-  setFadeOut,
-  setSelectedVersionList,
-  setVersionList,
-  downloadedVersionsConfig,
-  normalConfig,
-  setManagingVersion
-}: InstallsProps) {
+export default function Installs () {
+  const {
+    downloadProgress,
+    showPopup,
+    setShowPopup,
+    setPopupMode,
+    setFadeOut,
+    setSelectedVersionList,
+    setVersionList,
+    downloadedVersionsConfig,
+    normalConfig,
+    setManagingVersion
+  } = useGlobal()
+
   useEffect(() => {
     if (!showPopup) return
     setSelectedVersionList([])
@@ -45,7 +49,7 @@ export default function Installs ({
         setVersionList([])
       }
     })()
-  }, [showPopup])
+  }, [normalConfig, setSelectedVersionList, setVersionList, showPopup])
 
   return (
     <div className='mx-4 mt-4'>
