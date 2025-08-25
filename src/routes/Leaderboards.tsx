@@ -10,6 +10,7 @@ import { invoke } from '@tauri-apps/api/core'
 export default function Leaderboards () {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const formatter = new Intl.NumberFormat('en-US')
 
   async function refresh () {
     setLoading(true)
@@ -36,9 +37,11 @@ export default function Leaderboards () {
   }
 
   function downloadLeaderboard () {
-    let content = 'Username,Score\n'
+    let content = '"Username","Score","ScoreFormatted"\n'
     leaderboardData.forEach(entry => {
-      content += `${entry.username},${entry.value}\n`
+      content += `"${entry.username}","${entry.value}","${formatter.format(
+        BigInt(entry.value)
+      )}"\n`
     })
     while (content.endsWith('\n')) {
       content = content.slice(0, -1)
@@ -79,7 +82,7 @@ export default function Leaderboards () {
                 <p>
                   #{i + 1} {entry.username}
                 </p>
-                <p className='score'>{entry.value}</p>
+                <p className='score'>{formatter.format(BigInt(entry.value))}</p>
               </div>
             ))
           ) : loading ? (
