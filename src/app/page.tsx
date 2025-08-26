@@ -100,26 +100,28 @@ export default function Installs () {
                       onClick={async () => {
                         let plat = platform()
                         let willUseWine = false
+                        let cfg = null
+                        while (normalConfig != null) {
+                          cfg = normalConfig
+                          break
+                        }
                         if (plat === 'macos' || plat === 'linux') {
                           if (
                             !entry.version.platforms.includes(plat) &&
                             entry.version.platforms.includes('windows')
                           ) {
-                            while (normalConfig != null) {
-                              if (
-                                !normalConfig.settings.useWineOnUnixWhenNeeded
-                              ) {
-                                await message(
-                                  'Wine support is disabled in settings and this version requires wine',
-                                  {
-                                    title:
-                                      'Wine is needed to load this version',
-                                    kind: 'error'
-                                  }
-                                )
-                                return
-                              }
-                              break
+                            if (
+                              cfg != null &&
+                              !cfg.settings.useWineOnUnixWhenNeeded
+                            ) {
+                              await message(
+                                'Wine support is disabled in settings and this version requires wine',
+                                {
+                                  title: 'Wine is needed to load this version',
+                                  kind: 'error'
+                                }
+                              )
+                              return
                             }
                             plat = 'windows'
                             willUseWine = true
@@ -131,7 +133,8 @@ export default function Installs () {
                             entry.version.executables[
                               entry.version.platforms.indexOf(plat)
                             ],
-                          wine: willUseWine
+                          wine: willUseWine,
+                          wineCommand: cfg?.settings.wineOnUnixCommand
                         })
                       }}
                     >

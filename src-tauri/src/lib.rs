@@ -177,8 +177,9 @@ async fn download(
     Ok(())
 }
 
+#[allow(unused_variables)]
 #[tauri::command]
-fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
+fn launch_game(app: AppHandle, name: String, executable: String, wine: bool, wine_command: String) {
     let game_folder = app
         .path()
         .app_local_data_dir()
@@ -195,33 +196,25 @@ fn launch_game(app: AppHandle, name: String, executable: String, wine: bool) {
         return;
     }
     let result = if wine && platform() == "linux" {
-        let wine_path_output = Command::new("which").arg("wine").output();
-        let wine_path = match wine_path_output {
-            Ok(output) if output.status.success() => {
-                let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                if path.is_empty() {
-                    app.dialog()
-                    .message("Wine is not installed. Please install Wine to run this version of Berry Dash.")
-                    .kind(MessageDialogKind::Error)
-                    .title("Wine not found")
-                    .show(|_| {});
-                    return;
-                }
-                path
-            }
-            _ => {
-                app.dialog()
-                .message("Wine is not installed. Please install Wine to run this version of Berry Dash.")
-                .kind(MessageDialogKind::Error)
-                .title("Wine not found")
-                .show(|_| {});
-                return;
-            }
-        };
-        Command::new(wine_path)
-            .arg(&game_path)
-            .current_dir(&game_folder)
-            .spawn()
+        #[cfg(target_os = "linux")]
+        {
+            let wine_cmd_to_use =
+                wine_command.replace("%path%", &format!("\"{}\"", game_path.to_string_lossy()));
+
+            let parts = shlex::split(&wine_cmd_to_use).expect("failed to split command");
+            let exe = &parts[0];
+            let args = &parts[1..];
+
+            Command::new(exe)
+                .args(args)
+                .current_dir(&game_folder)
+                .spawn()
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            Err(std::io::Error::new(std::io::ErrorKind::Other, "not linux"))
+        }
     } else {
         if is_running_by_path(&game_path) {
             app.dialog()
