@@ -12,6 +12,7 @@ export default function Settings () {
     useState(false)
   const [allowNotifications, setAllowNotifications] = useState(false)
   const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
+  const [wineOnUnixCommand, setWineOnUnixCommand] = useState('wine %path%')
   const [useWindowsRoundedCorners, setUseWindowsRoundedCorners] =
     useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -26,6 +27,7 @@ export default function Settings () {
         setUseWineOnUnixWhenNeeded(
           normalConfig.settings.useWineOnUnixWhenNeeded
         )
+        setWineOnUnixCommand(normalConfig.settings.wineOnUnixCommand)
         setAllowNotifications(normalConfig.settings.allowNotifications)
         setUseWindowsRoundedCorners(
           normalConfig.settings.useWindowsRoundedCorners
@@ -80,6 +82,21 @@ export default function Settings () {
             }}
             className={platform() == 'linux' ? '' : 'hidden'}
           />
+          <input
+            type='text'
+            value={wineOnUnixCommand}
+            onChange={async e => {
+              while (normalConfig != null) {
+                setWineOnUnixCommand(e.target.value)
+                normalConfig.settings.wineOnUnixCommand = e.target.value
+                await writeNormalConfig(normalConfig)
+                break
+              }
+            }}
+            className={`input-field ${
+              platform() == 'linux' && useWineOnUnixWhenNeeded ? '' : 'hidden'
+            }`}
+          ></input>
           <Setting
             label='Use rounded corners (if supported)'
             value={useWindowsRoundedCorners}
