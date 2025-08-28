@@ -9,7 +9,7 @@ import { platform } from '@tauri-apps/plugin-os'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAdd, faRemove, faX } from '@fortawesome/free-solid-svg-icons'
+import { faAdd, faRemove, faXmark } from '@fortawesome/free-solid-svg-icons'
 import {
   isPermissionGranted,
   requestPermission,
@@ -375,7 +375,7 @@ export default function RootLayout ({
                           setTimeout(() => setShowPopup(false), 200)
                         }}
                       >
-                        <FontAwesomeIcon icon={faX} />
+                        <FontAwesomeIcon icon={faXmark} />
                       </button>
                       {popupMode === 0 ? (
                         <>
