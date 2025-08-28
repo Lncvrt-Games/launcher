@@ -6,4 +6,5 @@ export interface LeaderboardEntry {
   overlay: number
   birdColor: number[]
   overlayColor: number[]
+  customIcon: string | null
 }

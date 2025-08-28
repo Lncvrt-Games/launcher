@@ -3,20 +3,22 @@
 import { useEffect, useState } from 'react'
 import './Leaderboards.css'
 import axios from 'axios'
-import { LeaderboardEntry } from '../types/LeaderboardEntry'
 import { app } from '@tauri-apps/api'
 import { platform } from '@tauri-apps/plugin-os'
 import { decrypt } from '../util/Encryption'
 import { invoke } from '@tauri-apps/api/core'
+import Image from 'next/image'
+import { LeaderboardResponse } from '../types/LeaderboardResponse'
 
 export default function Leaderboards () {
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
+  const [leaderboardData, setLeaderboardData] =
+    useState<LeaderboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const formatter = new Intl.NumberFormat('en-US')
 
   async function refresh () {
     setLoading(true)
-    setLeaderboardData([])
+    setLeaderboardData(null)
     try {
       const launcherVersion = await app.getVersion()
       const response = await axios.get(
@@ -40,7 +42,7 @@ export default function Leaderboards () {
 
   function downloadLeaderboard () {
     let content = '"Username","Score","ScoreFormatted"\n'
-    leaderboardData.forEach(entry => {
+    leaderboardData?.entries.forEach(entry => {
       content += `"${entry.username}","${entry.value}","${formatter.format(
         BigInt(entry.value)
       )}"\n`
@@ -63,7 +65,7 @@ export default function Leaderboards () {
           <button
             className='button text-3xl'
             onClick={downloadLeaderboard}
-            disabled={loading || leaderboardData.length === 0}
+            disabled={loading || leaderboardData?.entries.length === 0}
           >
             Download Leaderboards
           </button>
@@ -78,13 +80,26 @@ export default function Leaderboards () {
       </div>
       <div className='leaderboard-container'>
         <div className='leaderboard-scroll'>
-          {leaderboardData.length ? (
-            leaderboardData.map((entry, i) => (
-              <div key={i} className='leaderboard-entry'>
-                <p>
-                  {entry.username} (#{i + 1})
-                </p>
-                <p className='score'>{formatter.format(BigInt(entry.value))}</p>
+          {leaderboardData?.entries.length ? (
+            leaderboardData.entries.map((entry, i) => (
+              <div key={i} className='leaderboard-entry justify-between'>
+                <div className='flex items-center gap-2'>
+                  {/* <Image
+                    src={}
+                    width={28}
+                    height={28}
+                    alt=''
+                    className='scale-x-[-1] -ml-2'
+                  /> */}
+                  <p>
+                    {entry.username} (#{i + 1})
+                  </p>
+                </div>
+                <div>
+                  <p className='score'>
+                    {formatter.format(BigInt(entry.value))}
+                  </p>
+                </div>
               </div>
             ))
           ) : loading ? (
