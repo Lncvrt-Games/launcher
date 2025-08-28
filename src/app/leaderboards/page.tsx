@@ -82,7 +82,7 @@ export default function Leaderboards () {
             leaderboardData.map((entry, i) => (
               <div key={i} className='leaderboard-entry'>
                 <p>
-                  #{i + 1} {entry.username}
+                  {entry.username} (#{i + 1})
                 </p>
                 <p className='score'>{formatter.format(BigInt(entry.value))}</p>
               </div>
