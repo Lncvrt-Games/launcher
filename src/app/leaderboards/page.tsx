@@ -7,7 +7,7 @@ import { app } from '@tauri-apps/api'
 import { platform } from '@tauri-apps/plugin-os'
 import { decrypt } from '../util/Encryption'
 import { invoke } from '@tauri-apps/api/core'
-// import Image from 'next/image'
+import Image from 'next/image'
 import { LeaderboardResponse } from '../types/LeaderboardResponse'
 
 export default function Leaderboards () {
@@ -84,13 +84,23 @@ export default function Leaderboards () {
             leaderboardData.entries.map((entry, i) => (
               <div key={i} className='leaderboard-entry justify-between'>
                 <div className='flex items-center gap-2'>
-                  {/* <Image
-                    src={}
+                  <Image
+                    src={
+                      entry.customIcon == null
+                        ? `https://berrydash-api.lncvrt.xyz/icon?r=${entry.birdColor[0]}&g=${entry.birdColor[1]}&b=${entry.birdColor[2]}&id=${entry.icon}`
+                        : `data:image/png;base64,${
+                            leaderboardData.customIcons[entry.customIcon]
+                          }`
+                    }
                     width={28}
                     height={28}
                     alt=''
                     className='scale-x-[-1] -ml-2'
-                  /> */}
+                    onError={e => {
+                      ;(e.currentTarget as HTMLImageElement).style.display =
+                        'none'
+                    }}
+                  />
                   <p>
                     {entry.username} (#{i + 1})
                   </p>
