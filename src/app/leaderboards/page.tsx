@@ -7,7 +7,7 @@ import { app } from '@tauri-apps/api'
 import { platform } from '@tauri-apps/plugin-os'
 import { decrypt } from '../util/Encryption'
 import { invoke } from '@tauri-apps/api/core'
-import Image from 'next/image'
+// import Image from 'next/image'
 import { LeaderboardResponse } from '../types/LeaderboardResponse'
 
 export default function Leaderboards () {
