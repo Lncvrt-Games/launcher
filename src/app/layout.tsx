@@ -156,19 +156,21 @@ export default function RootLayout ({
 
   useEffect(() => {
     ;(async () => {
-      setLoadingText('Checking latest version...')
-      try {
-        const response = await axios.get(
-          'https://berrydash.lncvrt.xyz/database/launcher/latest.php'
-        )
-        const client = await app.getVersion()
-        if (response.data !== client) {
-          setOutdated(true)
+      if (process.env.NODE_ENV === 'production') {
+        setLoadingText('Checking latest version...')
+        try {
+          const response = await axios.get(
+            'https://berrydash.lncvrt.xyz/database/launcher/latest.php'
+          )
+          const client = await app.getVersion()
+          if (response.data !== client) {
+            setOutdated(true)
+            return
+          }
+        } catch {
+          setLoadingText('Failed to check latest version.')
           return
         }
-      } catch {
-        setLoadingText('Failed to check latest version.')
-        return
       }
       setLoadingText('Loading configs...')
       const normalConfig = await readNormalConfig()
