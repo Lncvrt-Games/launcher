@@ -87,7 +87,9 @@ export default function Leaderboards () {
                   <Image
                     src={
                       entry.customIcon == null
-                        ? `https://berrydash-api.lncvrt.xyz/icon?r=${entry.birdColor[0]}&g=${entry.birdColor[1]}&b=${entry.birdColor[2]}&id=${entry.icon}`
+                        ? entry.overlay == 0
+                          ? `https://berrydash-api.lncvrt.xyz/icon?r=${entry.birdColor[0]}&g=${entry.birdColor[1]}&b=${entry.birdColor[2]}&id=${entry.icon}`
+                          : `https://berrydash-api.lncvrt.xyz/iconandoverlay?br=${entry.birdColor[0]}&bg=${entry.birdColor[1]}&bb=${entry.birdColor[2]}&bid=${entry.icon}&or=${entry.overlayColor[0]}&og=${entry.overlayColor[1]}&ob=${entry.overlayColor[2]}&oid=${entry.overlay}`
                         : `data:image/png;base64,${
                             leaderboardData.customIcons[entry.customIcon]
                           }`
