@@ -185,10 +185,14 @@ export default function RootLayout ({
   }, [])
 
   useEffect(() => {
-    const unlistenProgress = listen<string>('download-progress', event => {
+    let unlistenProgress: (() => void) | null = null
+    let unlistenDone: (() => void) | null = null
+    let unlistenFailed: (() => void) | null = null
+    let unlistenUninstalled: (() => void) | null = null
+
+    listen<string>('download-progress', event => {
       const [versionName, progStr] = event.payload.split(':')
       const prog = Number(progStr)
-
       setDownloadProgress(prev => {
         const i = prev.findIndex(d => d.version.version === versionName)
         if (i === -1) return prev
@@ -196,71 +200,77 @@ export default function RootLayout ({
         copy[i] = { ...copy[i], progress: prog }
         return copy
       })
-    })
+    }).then(f => (unlistenProgress = f))
 
-    const unlistenDone = listen<string>('download-done', async event => {
+    listen<string>('download-done', event => {
       const versionName = event.payload
       setDownloadProgress(prev => {
         const downloaded = prev.find(d => d.version.version === versionName)
-        if (downloaded && downloadedVersionsConfig) {
+        if (!downloaded) return prev
+
+        setDownloadedVersionsConfig(prevConfig => {
+          if (!prevConfig) return prevConfig
           const newDownloaded = DownloadedVersion.import(downloaded.version)
           const updatedConfig = {
-            ...downloadedVersionsConfig,
-            list: [...downloadedVersionsConfig.list, newDownloaded]
+            ...prevConfig,
+            list: [...prevConfig.list, newDownloaded]
           }
-          setDownloadedVersionsConfig(updatedConfig)
           writeVersionsConfig(updatedConfig)
-        }
+          return updatedConfig
+        })
+
         return prev.filter(d => d.version.version !== versionName)
       })
+
       activeDownloads.current--
       runNext()
-      if (downloadProgress.length === 0) {
-        await notifyUser('Downloads Complete', 'All downloads have completed.')
-      }
-    })
 
-    const unlistenFailed = listen<string>('download-failed', async event => {
+      setDownloadProgress(curr => {
+        if (curr.length === 0)
+          notifyUser('Downloads Complete', 'All downloads have completed.')
+        return curr
+      })
+    }).then(f => (unlistenDone = f))
+
+    listen<string>('download-failed', async event => {
       const versionName = event.payload
       setDownloadProgress(prev =>
         prev.map(d =>
           d.version.version === versionName ? { ...d, failed: true } : d
         )
       )
+
       activeDownloads.current--
       runNext()
       await notifyUser(
         'Download Failed',
         `The download for version ${versionName} has failed.`
       )
-    })
+    }).then(f => (unlistenFailed = f))
 
-    const unlistenUninstalled = listen<string>(
-      'version-uninstalled',
-      async event => {
-        const versionName = event.payload
-        setDownloadedVersionsConfig(prev => {
-          if (!prev) return prev
-          const updatedList = prev.list.filter(
-            v => v.version.version !== versionName
-          )
-          const updatedConfig = { ...prev, list: updatedList }
-          writeVersionsConfig(updatedConfig)
-          setManagingVersion(null)
-          setFadeOut(true)
-          setTimeout(() => setShowPopup(false), 200)
-          return updatedConfig
-        })
-      }
-    )
+    listen<string>('version-uninstalled', event => {
+      const versionName = event.payload
+      setDownloadedVersionsConfig(prev => {
+        if (!prev) return prev
+        const updatedList = prev.list.filter(
+          v => v.version.version !== versionName
+        )
+        const updatedConfig = { ...prev, list: updatedList }
+        writeVersionsConfig(updatedConfig)
+        setManagingVersion(null)
+        setFadeOut(true)
+        setTimeout(() => setShowPopup(false), 200)
+        return updatedConfig
+      })
+    }).then(f => (unlistenUninstalled = f))
 
     return () => {
-      unlistenProgress.then(f => f())
-      unlistenDone.then(f => f())
-      unlistenFailed.then(f => f())
-      unlistenUninstalled.then(f => f())
+      unlistenProgress?.()
+      unlistenDone?.()
+      unlistenFailed?.()
+      unlistenUninstalled?.()
     }
-  }, [downloadedVersionsConfig, downloadProgress, notifyUser])
+  }, [notifyUser])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => e.preventDefault()
