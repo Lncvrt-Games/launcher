@@ -28,6 +28,7 @@ import axios from 'axios'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { GlobalProvider } from './GlobalProvider'
 import { Roboto } from 'next/font/google'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -341,9 +342,29 @@ export default function RootLayout ({
                   <Sidebar />
                 </GlobalProvider>
                 <div
+                  className='dragarea'
+                  style={{
+                    height: '32px',
+                    width: '100vw',
+                    top: 0,
+                    left: 0,
+                    marginBottom: '-15px',
+                    position: 'absolute',
+                    zIndex: 9999,
+                    display: platform() == 'macos' ? 'block' : 'none',
+                    pointerEvents: 'auto'
+                  }}
+                  onMouseDown={() => {
+                    getCurrentWindow().startDragging()
+                  }}
+                ></div>
+                <div
                   className='relative z-[2] ml-[239px] w-[761px] border-b border-[#242424] h-[33px] bg-[#161616]'
                   style={{
-                    display: platform() == 'windows' ? 'block' : 'none'
+                    display:
+                      platform() == 'windows' || platform() == 'macos'
+                        ? 'block'
+                        : 'none'
                   }}
                 ></div>
                 <div className='relative z-0'>
