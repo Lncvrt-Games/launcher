@@ -22,7 +22,7 @@ tokio = "1.47.1"
 futures-util = { version = "0.3.31", features = ["io"] }
 tauri-plugin-decorum = "1.1.1"
 tauri-plugin-fs = "2.4.2"
-zip = "4.6.0"
+zip = "5.1.1"
 libc = "0.2.175"
 tauri-plugin-dialog = "2.4.0"
 tauri-plugin-notification = "2.3.1"
