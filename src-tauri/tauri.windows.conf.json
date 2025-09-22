@@ -4,9 +4,9 @@
   "version": "1.1.0",
   "identifier": "xyz.lncvrt.berrydash-launcher",
   "build": {
-    "beforeDevCommand": "yarn dev",
+    "beforeDevCommand": "bun dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "yarn build",
+    "beforeBuildCommand": "bun build",
     "frontendDist": "../out"
   },
   "app": {
