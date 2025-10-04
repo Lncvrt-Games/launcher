@@ -4,6 +4,10 @@
     "": {
       "name": "berry-dash-launcher",
       "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "7.1.0",
+        "@fortawesome/free-brands-svg-icons": "7.1.0",
+        "@fortawesome/free-solid-svg-icons": "7.1.0",
+        "@fortawesome/react-fontawesome": "3.1.0",
         "@tauri-apps/api": "2.8.0",
         "@tauri-apps/plugin-dialog": "2.4.0",
         "@tauri-apps/plugin-fs": "2.4.2",
@@ -18,10 +22,6 @@
       },
       "devDependencies": {
         "@eslint/eslintrc": "3.3.1",
-        "@fortawesome/fontawesome-svg-core": "7.1.0",
-        "@fortawesome/free-brands-svg-icons": "7.1.0",
-        "@fortawesome/free-solid-svg-icons": "7.1.0",
-        "@fortawesome/react-fontawesome": "3.1.0",
         "@tailwindcss/postcss": "4.1.14",
         "@tauri-apps/cli": "2.8.4",
         "@types/crypto-js": "4.2.2",
