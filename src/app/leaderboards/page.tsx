@@ -19,6 +19,8 @@ import SlowBerry from '../assets/berries/SlowBerry.png'
 import UltraBerry from '../assets/berries/UltraBerry.png'
 import SpeedyBerry from '../assets/berries/SpeedyBerry.png'
 import CoinBerry from '../assets/berries/CoinBerry.png'
+import RainbowBerry from '../componets/RandomBerry'
+import AntiBerry from '../assets/berries/AntiBerry.png'
 
 export default function Leaderboards () {
   const [leaderboardData, setLeaderboardData] =
@@ -178,6 +180,17 @@ export default function Leaderboards () {
               >
                 Legacy Leaderboard
               </button>
+              <button
+                className={`dropdown-item ${
+                  leaderboardType == 4 ? 'selected' : ''
+                }`}
+                onClick={() => {
+                  setLeftOpen(false)
+                  setLeaderboardType(4)
+                }}
+              >
+                Total Berries Leaderboard
+              </button>
             </div>
           </div>
         </div>
@@ -313,6 +326,30 @@ export default function Leaderboards () {
                 <span className='flex items-center gap-2'>
                   <Image src={CoinBerry} width={24} height={24} alt='' />
                   Coin Berry
+                </span>
+              </button>
+              <button
+                className={`dropdown-item ${berryType == 5 ? 'selected' : ''}`}
+                onClick={() => {
+                  setRightOpen(false)
+                  setBerryType(6)
+                }}
+              >
+                <span className='flex items-center gap-2'>
+                  <RainbowBerry />
+                  Random Berry
+                </span>
+              </button>
+              <button
+                className={`dropdown-item ${berryType == 5 ? 'selected' : ''}`}
+                onClick={() => {
+                  setRightOpen(false)
+                  setBerryType(7)
+                }}
+              >
+                <span className='flex items-center gap-2'>
+                  <Image src={AntiBerry} width={24} height={24} alt='' />
+                  Anti Berry
                 </span>
               </button>
             </div>

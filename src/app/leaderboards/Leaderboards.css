@@ -29,7 +29,7 @@
 }
 
 .dropdown-menu {
-  @apply absolute bottom-full mb-2 w-45 bg-[#242424] border border-[#484848] rounded-md shadow-lg hidden z-50;
+  @apply absolute bottom-full mb-2 w-55 bg-[#242424] border border-[#484848] rounded-md shadow-lg hidden z-50;
 }
 
 .dropdown-left .dropdown-menu {
@@ -37,7 +37,7 @@
 }
 
 .dropdown-right .dropdown-menu {
-  @apply right-0 w-40;
+  @apply right-0 w-42;
 }
 
 .dropdown-menu.open {
