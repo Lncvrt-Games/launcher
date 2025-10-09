@@ -1,11 +1,11 @@
 [package]
-name = "berry-dash-launcher"
+name = "lncvrt-games-launcher"
 version = "1.1.0"
 authors = ["Lncvrt"]
 edition = "2024"
 
 [lib]
-name = "berry_dash_launcher_lib"
+name = "lncvrt_games_launcher_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -22,8 +22,8 @@ tokio = "1.47.1"
 futures-util = { version = "0.3.31", features = ["io"] }
 tauri-plugin-decorum = "1.1.1"
 tauri-plugin-fs = "2.4.2"
-zip = "5.1.1"
-libc = "0.2.176"
+zip = "6.0.0"
+libc = "0.2.177"
 tauri-plugin-dialog = "2.4.0"
 tauri-plugin-notification = "2.3.1"
 sysinfo = "0.37.2"
