@@ -111,7 +111,7 @@ export default function Sidebar () {
         </Link>
         <a
           draggable={false}
-          onClick={() => openUrl('https://berrydash.lncvrt.xyz/discord')}
+          onClick={() => openUrl('https://games.lncvrt.xyz/discord')}
           className='link'
         >
           <FontAwesomeIcon icon={faDiscord} className='mr-1' /> Community

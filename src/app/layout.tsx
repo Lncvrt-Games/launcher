@@ -160,7 +160,7 @@ export default function RootLayout ({
         setLoadingText('Checking latest version...')
         try {
           const response = await axios.get(
-            'https://berrydash.lncvrt.xyz/database/launcher/latest.php'
+            'https://games.lncvrt.xyz/database/launcher/latest.php'
           )
           const client = await app.getVersion()
           if (response.data !== client) {
@@ -290,7 +290,7 @@ export default function RootLayout ({
                   <button
                     className='button'
                     onClick={() =>
-                      openUrl('https://berrydash.lncvrt.xyz/download')
+                      openUrl('https://games.lncvrt.xyz/berrydash/download')
                     }
                   >
                     Download latest version

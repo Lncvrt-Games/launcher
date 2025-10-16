@@ -32,7 +32,7 @@ export default function Installs () {
         while (normalConfig != null) {
           const useWine = normalConfig.settings.useWineOnUnixWhenNeeded
           const res = await axios.get(
-            'https://berrydash.lncvrt.xyz/database/launcher/versions.php'
+            'https://games.lncvrt.xyz/database/launcher/versions.php'
           )
           const p = platform()
           const filtered = res.data.filter((d: { platforms: string[] }) =>

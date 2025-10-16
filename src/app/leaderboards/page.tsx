@@ -52,7 +52,7 @@ export default function Leaderboards () {
         )
       }
       const response = await axios.post(
-        'https://berrydash.lncvrt.xyz/database/getTopPlayers.php',
+        'https://games.lncvrt.xyz/database/berrydash/getTopPlayers.php',
         formData,
         {
           headers: {
