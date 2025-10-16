@@ -13,8 +13,6 @@ export default function Settings () {
   const [allowNotifications, setAllowNotifications] = useState(false)
   const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
   const [wineOnUnixCommand, setWineOnUnixCommand] = useState('wine %path%')
-  const [useWindowsRoundedCorners, setUseWindowsRoundedCorners] =
-    useState(false)
   const [loaded, setLoaded] = useState(false)
   const { normalConfig } = useGlobal()
 
@@ -29,9 +27,6 @@ export default function Settings () {
         )
         setWineOnUnixCommand(normalConfig.settings.wineOnUnixCommand)
         setAllowNotifications(normalConfig.settings.allowNotifications)
-        setUseWindowsRoundedCorners(
-          normalConfig.settings.useWindowsRoundedCorners
-        )
         setLoaded(true)
         break
       }
@@ -97,23 +92,6 @@ export default function Settings () {
               platform() == 'linux' && useWineOnUnixWhenNeeded ? '' : 'hidden'
             }`}
           ></input>
-          <Setting
-            label='Use rounded corners (if supported)'
-            value={useWindowsRoundedCorners}
-            onChange={async () => {
-              while (normalConfig != null) {
-                setUseWindowsRoundedCorners(!useWindowsRoundedCorners)
-                normalConfig.settings.useWindowsRoundedCorners =
-                  !useWindowsRoundedCorners
-                await writeNormalConfig(normalConfig)
-                invoke('windows_rounded_corners', {
-                  enabled: !useWindowsRoundedCorners
-                })
-                break
-              }
-            }}
-            className={platform() == 'windows' ? '' : 'hidden'}
-          />
         </div>
       )}
     </>

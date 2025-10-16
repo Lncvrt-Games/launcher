@@ -10,7 +10,7 @@ use std::{
     time::Duration,
 };
 use sysinfo::System;
-use tauri::{AppHandle, Emitter, Manager, PhysicalSize};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use tauri_plugin_opener::OpenerExt;
 use tauri_plugin_os::platform;
@@ -372,16 +372,6 @@ fn fix_mac_permissions(app: AppHandle, name: String, executable: String) {
     }
 }
 
-#[tauri::command]
-fn windows_rounded_corners(app: AppHandle, enabled: bool) {
-    let window = app.get_webview_window("main");
-    let _ = window.clone().unwrap().set_shadow(enabled);
-    let _ = window
-        .clone()
-        .unwrap()
-        .set_size(PhysicalSize::new(1000.0, 632.0)); // Yes, this is needed.
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_variables)]
@@ -406,7 +396,6 @@ pub fn run() {
             uninstall_version,
             open_folder,
             fix_mac_permissions,
-            windows_rounded_corners
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]
