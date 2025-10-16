@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Setting } from '../componets/Setting'
 import { writeNormalConfig } from '../util/BazookaManager'
 import { platform } from '@tauri-apps/plugin-os'
-import { invoke } from '@tauri-apps/api/core'
 import { useGlobal } from '../GlobalProvider'
 
 export default function Settings () {

@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
 import BerryNoColor from '../assets/berries/BerryNoColor.png'
 
 export default function RandomBerry () {
