@@ -7,8 +7,6 @@ import { platform } from '@tauri-apps/plugin-os'
 import { useGlobal } from '../GlobalProvider'
 
 export default function Settings () {
-  const [checkForNewVersionOnLoad, setCheckForNewVersionOnLoad] =
-    useState(false)
   const [allowNotifications, setAllowNotifications] = useState(false)
   const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
   const [wineOnUnixCommand, setWineOnUnixCommand] = useState('wine %path%')
@@ -18,9 +16,6 @@ export default function Settings () {
   useEffect(() => {
     ;(async () => {
       while (normalConfig != null) {
-        setCheckForNewVersionOnLoad(
-          normalConfig.settings.checkForNewVersionOnLoad
-        )
         setUseWineOnUnixWhenNeeded(
           normalConfig.settings.useWineOnUnixWhenNeeded
         )
@@ -37,19 +32,6 @@ export default function Settings () {
       <p className='text-3xl ml-4 mt-4'>Settings</p>
       {loaded && (
         <div className='ml-4 mt-4 bg-[#161616] border border-[#242424] rounded-lg p-4 w-fit h-fit'>
-          <Setting
-            label='Check for new version on load'
-            value={checkForNewVersionOnLoad}
-            onChange={async () => {
-              while (normalConfig != null) {
-                setCheckForNewVersionOnLoad(!checkForNewVersionOnLoad)
-                normalConfig.settings.checkForNewVersionOnLoad =
-                  !checkForNewVersionOnLoad
-                await writeNormalConfig(normalConfig)
-                break
-              }
-            }}
-          />
           <Setting
             label='Allow sending notifications'
             value={allowNotifications}

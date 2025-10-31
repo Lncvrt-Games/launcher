@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 .sidebar {
-  @apply fixed top-0 left-0 w-60 h-screen bg-[#161616] flex flex-col border-e-[1px] border-[#242424] z-[1];
+  @apply fixed top-0 left-0 w-60 h-screen bg-[#161616] flex flex-col border-e border-[#242424] z-1;
 }
 
 .sidebar-downloads {

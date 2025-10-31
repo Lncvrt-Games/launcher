@@ -7,24 +7,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCog,
   faDownload,
-  faRankingStar,
-  faServer
+  faGamepad,
+  faHexagonNodes
 } from '@fortawesome/free-solid-svg-icons'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
-import { useState } from 'react'
 import { platform } from '@tauri-apps/plugin-os'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useGlobal } from '../GlobalProvider'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 export default function Sidebar () {
-  const [rot, setRot] = useState(0)
-  const [dir, setDir] = useState(1)
-  const { setShowPopup, setPopupMode, setFadeOut, downloadProgress } =
-    useGlobal()
+  const {
+    getListOfGames,
+    setShowPopup,
+    setPopupMode,
+    setFadeOut,
+    downloadProgress
+  } = useGlobal()
+
   const pathname = usePathname()
+  const params = useSearchParams()
 
   return (
     <aside className='sidebar'>
@@ -53,61 +57,52 @@ export default function Sidebar () {
           height={48}
           alt=''
           style={{
-            transform: `rotate(${rot}deg)`,
-            transition: 'transform 0.3s ease',
             marginTop: ['windows', 'macos'].includes(platform())
               ? '20px'
-              : '0px'
+              : '0px',
+            marginBottom: '-20px'
           }}
-          onClick={() =>
-            setRot(r => {
-              let next = r + dir * 90
-              if (next >= 360) {
-                next = 360
-                setDir(-1)
-              } else if (next <= 0) {
-                next = 0
-                setDir(1)
-              }
-              return next
-            })
-          }
-          onContextMenu={() =>
-            setRot(r => {
-              let next = r - dir * 90
-              if (next >= 360) {
-                next = 360
-                setDir(-1)
-              } else if (next <= 0) {
-                next = 0
-                setDir(1)
-              }
-              return next
-            })
-          }
         />
       </div>
       <nav className='nav-links'>
         <Link
           draggable={false}
           href='/'
-          className={`link ${pathname === '/' ? 'active' : ''}`}
+          className={`link relative flex items-center ${
+            pathname === '/' || pathname === '/game' ? 'active' : ''
+          }`}
         >
-          <FontAwesomeIcon icon={faServer} className='mr-1' /> Installs
+          <FontAwesomeIcon icon={faHexagonNodes} className='mr-2' /> Games
         </Link>
+        {getListOfGames()
+          .sort((a, b) => {
+            return a.id - b.id
+          })
+          .map(i => (
+            <Link
+              key={i.id}
+              draggable={false}
+              href={'/game?id=' + i.id}
+              className={`link ${
+                pathname === '/game' && Number(params.get('id') || 0) == i.id
+                  ? 'active'
+                  : ''
+              } ml-auto w-50 ${
+                pathname === '/' || pathname === '/game' ? '' : 'hidden'
+              }`}
+            >
+              <FontAwesomeIcon icon={faGamepad} className='mr-1' />{' '}
+              {i.cutOff == null
+                ? i.name
+                : i.name.substring(0, i.cutOff) + '...'}
+            </Link>
+          ))}
         <Link
           draggable={false}
           href='/settings'
           className={`link ${pathname === '/settings' ? 'active' : ''}`}
         >
           <FontAwesomeIcon icon={faCog} className='mr-1' /> Settings
-        </Link>
-        <Link
-          draggable={false}
-          href='/leaderboards'
-          className={`link ${pathname === '/leaderboards' ? 'active' : ''}`}
-        >
-          <FontAwesomeIcon icon={faRankingStar} className='mr-1' /> Leaderboards
         </Link>
         <a
           draggable={false}

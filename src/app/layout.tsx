@@ -1,15 +1,19 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Sidebar from './componets/Sidebar'
 import './Globals.css'
-import { LauncherVersion } from './types/LauncherVersion'
 import { DownloadProgress } from './types/DownloadProgress'
-import { platform } from '@tauri-apps/plugin-os'
+import { arch, platform } from '@tauri-apps/plugin-os'
 import { invoke } from '@tauri-apps/api/core'
-import { listen } from '@tauri-apps/api/event'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAdd, faRemove, faXmark } from '@fortawesome/free-solid-svg-icons'
+import {
+  faAdd,
+  faChevronLeft,
+  faDownload,
+  faRemove,
+  faXmark
+} from '@fortawesome/free-solid-svg-icons'
 import {
   isPermissionGranted,
   requestPermission,
@@ -21,13 +25,17 @@ import {
   writeVersionsConfig
 } from './util/BazookaManager'
 import { VersionsConfig } from './types/VersionsConfig'
-import { DownloadedVersion } from './types/DownloadedVersion'
 import { NormalConfig } from './types/NormalConfig'
 import { app } from '@tauri-apps/api'
 import axios from 'axios'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { GlobalProvider } from './GlobalProvider'
 import { Roboto } from 'next/font/google'
+import { ServerVersionsResponse } from './types/ServerVersionsResponse'
+import { GameVersion } from './types/GameVersion'
+import { Game } from './types/Game'
+import { listen } from '@tauri-apps/api/event'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -41,94 +49,24 @@ export default function RootLayout ({
   const [loading, setLoading] = useState(true)
   const [loadingText, setLoadingText] = useState('Loading...')
   const [outdated, setOutdated] = useState(false)
-  const [versionList, setVersionList] = useState<null | LauncherVersion[]>(null)
-  const [selectedVersionList, setSelectedVersionList] = useState<
-    LauncherVersion[]
-  >([])
-  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>(
-    []
-  )
-  const [showPopup, setShowPopup] = useState(false)
-  const [popupMode, setPopupMode] = useState<null | number>(null)
-  const [fadeOut, setFadeOut] = useState(false)
-  const activeDownloads = useRef(0)
-  const queue = useRef<(() => void)[]>([])
+
+  const [serverVersionList, setServerVersionList] =
+    useState<null | ServerVersionsResponse>(null)
+  const [selectedVersionList, setSelectedVersionList] = useState<string[]>([])
+
   const [downloadedVersionsConfig, setDownloadedVersionsConfig] =
     useState<VersionsConfig | null>(null)
   const [normalConfig, setNormalConfig] = useState<NormalConfig | null>(null)
-  const [managingVersion, setManagingVersion] =
-    useState<DownloadedVersion | null>(null)
 
-  function runNext () {
-    if (activeDownloads.current === 0 && queue.current.length === 0) {
-      setFadeOut(true)
-      setTimeout(() => setShowPopup(false), 200)
-      return
-    }
-    if (activeDownloads.current >= 3 || queue.current.length === 0) return
-    activeDownloads.current++
-    const next = queue.current.shift()
-    next?.()
-  }
+  const [showPopup, setShowPopup] = useState(false)
+  const [popupMode, setPopupMode] = useState<null | number>(null)
+  const [fadeOut, setFadeOut] = useState(false)
 
-  async function downloadVersions (versions: LauncherVersion[]) {
-    while (normalConfig != null) {
-      const useWine = normalConfig.settings.useWineOnUnixWhenNeeded
-      const p = platform()
-      const newDownloads = versions.map(
-        v => new DownloadProgress(v, 0, false, true)
-      )
-      setDownloadProgress(prev => [...prev, ...newDownloads])
-
-      newDownloads.forEach(download => {
-        let plat = p
-        if (p === 'linux' && useWine) {
-          if (
-            !download.version.platforms.includes(p) &&
-            download.version.platforms.includes('windows')
-          ) {
-            plat = 'windows'
-          }
-        }
-        const idx = download.version.platforms.indexOf(plat)
-        const url = download.version.downloadUrls[idx]
-        const exe = download.version.executables[idx]
-
-        if (!url) {
-          setDownloadProgress(prev =>
-            prev.map(d =>
-              d.version.version === download.version.version
-                ? { ...d, failed: true }
-                : d
-            )
-          )
-          return
-        }
-
-        const task = () => {
-          setDownloadProgress(prev => {
-            const i = prev.findIndex(
-              d => d.version.version === download.version.version
-            )
-            if (i === -1) return prev
-            const copy = [...prev]
-            copy[i] = { ...copy[i], queued: false }
-            return copy
-          })
-
-          invoke('download', {
-            url,
-            name: download.version.version,
-            executable: exe
-          })
-        }
-
-        queue.current.push(task)
-        runNext()
-      })
-      break
-    }
-  }
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>(
+    []
+  )
+  const [managingVersion, setManagingVersion] = useState<string | null>(null)
+  const [selectedGame, setSelectedGame] = useState<number | null>(null)
 
   function handleOverlayClick (e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) {
@@ -155,6 +93,49 @@ export default function RootLayout ({
   )
 
   useEffect(() => {
+    let unlistenProgress: (() => void) | null = null
+    let unlistenUninstalled: (() => void) | null = null
+
+    listen<string>('download-progress', event => {
+      const [versionName, progStr] = event.payload.split(':')
+      const prog = Number(progStr)
+      setDownloadProgress(prev => {
+        const i = prev.findIndex(d => d.version === versionName)
+        if (i === -1) return prev
+        const copy = [...prev]
+        copy[i] = { ...copy[i], progress: prog }
+        return copy
+      })
+    }).then(f => (unlistenProgress = f))
+
+    listen<string>('version-uninstalled', event => {
+      const versionName = event.payload
+      setDownloadedVersionsConfig(prev => {
+        if (!prev) return prev
+        const updatedList = prev.list.filter(v => v !== versionName)
+        const updatedTimestamps = Object.fromEntries(
+          Object.entries(prev.timestamps).filter(([k]) => k !== versionName)
+        )
+        const updatedConfig = {
+          ...prev,
+          list: updatedList,
+          timestamps: updatedTimestamps
+        }
+        writeVersionsConfig(updatedConfig)
+        setManagingVersion(null)
+        setFadeOut(true)
+        setTimeout(() => setShowPopup(false), 200)
+        return updatedConfig
+      })
+    }).then(f => (unlistenUninstalled = f))
+
+    return () => {
+      unlistenProgress?.()
+      unlistenUninstalled?.()
+    }
+  }, [notifyUser])
+
+  useEffect(() => {
     ;(async () => {
       if (process.env.NODE_ENV === 'production') {
         setLoadingText('Checking latest version...')
@@ -172,6 +153,16 @@ export default function RootLayout ({
           return
         }
       }
+      setLoadingText('Downloading version list...')
+      try {
+        const res = await axios.get(
+          'https://games.lncvrt.xyz/api/launcher/versions'
+        )
+        setServerVersionList(res.data)
+      } catch {
+        setLoadingText('Failed to download versions list.')
+        return
+      }
       setLoadingText('Loading configs...')
       const normalConfig = await readNormalConfig()
       const versionsConfig = await readVersionsConfig()
@@ -182,98 +173,197 @@ export default function RootLayout ({
   }, [])
 
   useEffect(() => {
-    let unlistenProgress: (() => void) | null = null
-    let unlistenDone: (() => void) | null = null
-    let unlistenFailed: (() => void) | null = null
-    let unlistenUninstalled: (() => void) | null = null
-
-    listen<string>('download-progress', event => {
-      const [versionName, progStr] = event.payload.split(':')
-      const prog = Number(progStr)
-      setDownloadProgress(prev => {
-        const i = prev.findIndex(d => d.version.version === versionName)
-        if (i === -1) return prev
-        const copy = [...prev]
-        copy[i] = { ...copy[i], progress: prog }
-        return copy
-      })
-    }).then(f => (unlistenProgress = f))
-
-    listen<string>('download-done', event => {
-      const versionName = event.payload
-      setDownloadProgress(prev => {
-        const downloaded = prev.find(d => d.version.version === versionName)
-        if (!downloaded) return prev
-
-        setDownloadedVersionsConfig(prevConfig => {
-          if (!prevConfig) return prevConfig
-          const newDownloaded = DownloadedVersion.import(downloaded.version)
-          const updatedConfig = {
-            ...prevConfig,
-            list: [...prevConfig.list, newDownloaded]
-          }
-          writeVersionsConfig(updatedConfig)
-          return updatedConfig
-        })
-
-        return prev.filter(d => d.version.version !== versionName)
-      })
-
-      activeDownloads.current--
-      runNext()
-
-      setDownloadProgress(curr => {
-        if (curr.length === 0)
-          notifyUser('Downloads Complete', 'All downloads have completed.')
-        return curr
-      })
-    }).then(f => (unlistenDone = f))
-
-    listen<string>('download-failed', async event => {
-      const versionName = event.payload
-      setDownloadProgress(prev =>
-        prev.map(d =>
-          d.version.version === versionName ? { ...d, failed: true } : d
-        )
-      )
-
-      activeDownloads.current--
-      runNext()
-      await notifyUser(
-        'Download Failed',
-        `The download for version ${versionName} has failed.`
-      )
-    }).then(f => (unlistenFailed = f))
-
-    listen<string>('version-uninstalled', event => {
-      const versionName = event.payload
-      setDownloadedVersionsConfig(prev => {
-        if (!prev) return prev
-        const updatedList = prev.list.filter(
-          v => v.version.version !== versionName
-        )
-        const updatedConfig = { ...prev, list: updatedList }
-        writeVersionsConfig(updatedConfig)
-        setManagingVersion(null)
-        setFadeOut(true)
-        setTimeout(() => setShowPopup(false), 200)
-        return updatedConfig
-      })
-    }).then(f => (unlistenUninstalled = f))
-
-    return () => {
-      unlistenProgress?.()
-      unlistenDone?.()
-      unlistenFailed?.()
-      unlistenUninstalled?.()
-    }
-  }, [notifyUser])
-
-  useEffect(() => {
     const handler = (e: MouseEvent) => e.preventDefault()
     document.addEventListener('contextmenu', handler)
     return () => document.removeEventListener('contextmenu', handler)
   }, [])
+
+  function getSpecialVersionsList (game?: number): GameVersion[] {
+    if (!normalConfig || !serverVersionList) return []
+
+    const useWine = normalConfig.settings.useWineOnUnixWhenNeeded
+    const p = platform()
+    const a = arch()
+
+    return serverVersionList.versions
+      .filter(v => !downloadedVersionsConfig?.list.includes(v.id))
+      .filter(v => {
+        if (game && v.game != game) return false
+        if (p === 'macos' || p === 'linux') {
+          if (useWine) {
+            return (
+              v.platforms.includes('windows-x86') ||
+              v.platforms.includes('windows-x64') ||
+              v.platforms.includes(p)
+            )
+          }
+          return v.platforms.includes(p)
+        }
+
+        if (p === 'windows') {
+          if (a === 'x86') return v.platforms.includes('windows-x86')
+          if (a === 'x86_64')
+            return (
+              v.platforms.includes('windows-x86') ||
+              v.platforms.includes('windows-x64')
+            )
+          if (a === 'aarch64') return v.platforms.includes('windows-arm64')
+        }
+
+        return false
+      })
+      .sort((a, b) => {
+        if (b.game !== a.game) return a.game - b.game
+        return b.place - a.place
+      })
+  }
+
+  function getDownloadLink (version: GameVersion): string | undefined {
+    const p = platform()
+    const a = arch()
+
+    const findUrl = (plat: string) => {
+      const i = version.platforms.indexOf(plat)
+      return i >= 0 ? version.downloadUrls[i] : undefined
+    }
+
+    if (p === 'windows') {
+      if (a === 'x86') return findUrl('windows-x86')
+      if (a === 'x86_64')
+        return findUrl('windows-x64') || findUrl('windows-x86')
+      if (a === 'aarch64') return findUrl('windows-arm64')
+    }
+
+    if (p === 'macos' || p === 'linux') {
+      if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
+        return findUrl('windows-x86') || findUrl('windows-x64') || findUrl(p)
+      }
+      return findUrl(p)
+    }
+
+    return undefined
+  }
+
+  function getExecutableName (version: GameVersion): string | undefined {
+    const p = platform()
+    const a = arch()
+
+    const findUrl = (plat: string) => {
+      const i = version.platforms.indexOf(plat)
+      return i >= 0 ? version.executables[i] : undefined
+    }
+
+    if (p === 'windows') {
+      if (a === 'x86') return findUrl('windows-x86')
+      if (a === 'x86_64')
+        return findUrl('windows-x64') || findUrl('windows-x86')
+    }
+
+    if (p === 'macos' || p === 'linux') {
+      if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
+        return findUrl('windows-x86') || findUrl('windows-x64') || findUrl(p)
+      }
+      return findUrl(p)
+    }
+
+    return undefined
+  }
+
+  function getVersionInfo (id: string | undefined): GameVersion | undefined {
+    if (!id) return undefined
+    return serverVersionList?.versions.find(v => v.id === id)
+  }
+
+  function getVersionGame (game: number | undefined): Game | undefined {
+    if (!game) return undefined
+    return serverVersionList?.games.find(g => g.id === game)
+  }
+
+  function getListOfGames (): Game[] {
+    if (!downloadedVersionsConfig?.list) return []
+
+    const gamesMap = new Map<number, Game>()
+
+    downloadedVersionsConfig.list.forEach(i => {
+      const version = getVersionInfo(i)
+      if (!version) return
+      const game = getVersionGame(version.game)
+      if (!game) return
+      gamesMap.set(game.id, game)
+    })
+
+    return Array.from(gamesMap.values())
+  }
+
+  async function downloadVersions (): Promise<void> {
+    const list = selectedVersionList
+    setSelectedVersionList([])
+
+    const newDownloads = list.map(
+      version => new DownloadProgress(version, 0, false, true)
+    )
+
+    setDownloadProgress(newDownloads)
+
+    for (const download of newDownloads) {
+      const info = getVersionInfo(download.version)
+      if (!info) {
+        setDownloadProgress(prev =>
+          prev.filter(d => d.version !== download.version)
+        )
+        return
+      }
+      const downloadLink = getDownloadLink(info)
+      if (!downloadLink) {
+        setDownloadProgress(prev =>
+          prev.filter(d => d.version !== download.version)
+        )
+        return
+      }
+      const executableName = getExecutableName(info)
+      if (!executableName) {
+        setDownloadProgress(prev =>
+          prev.filter(d => d.version !== download.version)
+        )
+        return
+      }
+      setDownloadProgress(prev =>
+        prev.map(d =>
+          d.version === download.version ? { ...d, queued: false } : d
+        )
+      )
+      const res = await invoke<string>('download', {
+        url: downloadLink,
+        name: info.id,
+        executable: executableName
+      })
+      if (res == '1') {
+        setDownloadProgress(prev =>
+          prev.filter(d => d.version !== download.version)
+        )
+        let data = downloadedVersionsConfig
+        if (!data) {
+          setDownloadProgress(prev =>
+            prev.filter(d => d.version !== download.version)
+          )
+          return
+        }
+        const date = Date.now()
+        data.list = [...data.list, download.version]
+        data.timestamps = { ...data.timestamps, [download.version]: date }
+        setDownloadedVersionsConfig(data)
+        writeVersionsConfig(data)
+      } else {
+        setDownloadProgress(prev =>
+          prev.map(d =>
+            d.version === download.version
+              ? { ...d, queued: false, failed: true, progress: 0 }
+              : d
+          )
+        )
+      }
+    }
+  }
 
   return (
     <>
@@ -301,73 +391,54 @@ export default function RootLayout ({
               )}
             </div>
           ) : (
-            <>
+            <GlobalProvider
+              value={{
+                serverVersionList,
+                selectedVersionList,
+                setSelectedVersionList,
+                downloadProgress,
+                setDownloadProgress,
+                showPopup,
+                setShowPopup,
+                popupMode,
+                setPopupMode,
+                fadeOut,
+                setFadeOut,
+                downloadedVersionsConfig,
+                setDownloadedVersionsConfig,
+                normalConfig,
+                setNormalConfig,
+                managingVersion,
+                setManagingVersion,
+                getVersionInfo,
+                getVersionGame,
+                getListOfGames,
+                setSelectedGame
+              }}
+            >
               <div
                 tabIndex={0}
                 onKeyDown={e => {
                   if (showPopup && e.key === 'Escape') {
-                    setFadeOut(true)
-                    setTimeout(() => setShowPopup(false), 200)
+                    if (popupMode == 0 && selectedGame) {
+                      setSelectedGame(null)
+                      setSelectedVersionList([])
+                    } else {
+                      setFadeOut(true)
+                      setTimeout(() => setShowPopup(false), 200)
+                    }
                   }
                 }}
               >
-                <GlobalProvider
-                  value={{
-                    versionList,
-                    setVersionList,
-                    selectedVersionList,
-                    setSelectedVersionList,
-                    downloadProgress,
-                    setDownloadProgress,
-                    showPopup,
-                    setShowPopup,
-                    popupMode,
-                    setPopupMode,
-                    fadeOut,
-                    setFadeOut,
-                    downloadedVersionsConfig,
-                    setDownloadedVersionsConfig,
-                    normalConfig,
-                    setNormalConfig,
-                    managingVersion,
-                    setManagingVersion
-                  }}
-                >
-                  <Sidebar />
-                </GlobalProvider>
+                <Sidebar />
                 <div
-                  className='relative z-[2] ml-[239px] w-[761px] border-b border-[#242424] h-[33px] bg-[#161616]'
+                  className='relative z-2 ml-[239px] w-[761px] border-b border-[#242424] h-[33px] bg-[#161616]'
                   style={{
-                    display: platform() == 'windows' ? 'block' : 'none'
+                    display: platform() === 'windows' ? 'block' : 'none'
                   }}
-                ></div>
+                />
                 <div className='relative z-0'>
-                  <main style={{ marginLeft: '15rem' }}>
-                    <GlobalProvider
-                      value={{
-                        versionList,
-                        setVersionList,
-                        selectedVersionList,
-                        setSelectedVersionList,
-                        downloadProgress,
-                        setDownloadProgress,
-                        showPopup,
-                        setShowPopup,
-                        popupMode,
-                        setPopupMode,
-                        fadeOut,
-                        setFadeOut,
-                        downloadedVersionsConfig,
-                        setDownloadedVersionsConfig,
-                        normalConfig,
-                        setNormalConfig,
-                        managingVersion,
-                        setManagingVersion
-                      }}
-                    >
-                      {children}
-                    </GlobalProvider>
-                  </main>
+                  <main style={{ marginLeft: '15rem' }}>{children}</main>
                 </div>
                 {showPopup && (
                   <div
@@ -378,67 +449,82 @@ export default function RootLayout ({
                       <button
                         className='close-button'
                         onClick={() => {
-                          setFadeOut(true)
-                          setTimeout(() => setShowPopup(false), 200)
+                          if (popupMode == 0 && selectedGame) {
+                            setSelectedGame(null)
+                            setSelectedVersionList([])
+                          } else {
+                            setFadeOut(true)
+                            setTimeout(() => setShowPopup(false), 200)
+                          }
                         }}
                       >
-                        <FontAwesomeIcon icon={faXmark} />
+                        <FontAwesomeIcon
+                          icon={
+                            popupMode == 0 && selectedGame
+                              ? faChevronLeft
+                              : faXmark
+                          }
+                        />
                       </button>
-                      {popupMode === 0 ? (
+                      {popupMode === 0 && selectedGame ? (
                         <>
                           <p className='text-xl text-center'>
                             Select versions to download
                           </p>
                           <div className='popup-content'>
-                            {versionList == null ? (
-                              <p className='text-center'>
-                                Getting version list...
-                              </p>
-                            ) : (
-                              versionList
-                                .filter(
-                                  v =>
-                                    !downloadedVersionsConfig?.list.some(
-                                      dv => dv.version.version === v.version
-                                    )
-                                )
-                                .map((v, i) => (
-                                  <div key={i} className='popup-entry'>
-                                    <p className='text-2xl'>
-                                      Berry Dash v{v.displayName}
-                                    </p>
-                                    <button
-                                      className='button right-2 bottom-2'
-                                      onClick={() => {
-                                        if (!selectedVersionList) return
-                                        if (!selectedVersionList.includes(v)) {
-                                          setSelectedVersionList([
-                                            ...selectedVersionList,
-                                            v
-                                          ])
-                                        } else {
-                                          setSelectedVersionList(
-                                            selectedVersionList.filter(
-                                              x => x !== v
-                                            )
-                                          )
-                                        }
-                                      }}
-                                    >
-                                      {selectedVersionList.includes(v) ? (
-                                        <>
-                                          <FontAwesomeIcon icon={faRemove} />{' '}
-                                          Remove
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FontAwesomeIcon icon={faAdd} /> Add
-                                        </>
-                                      )}
-                                    </button>
-                                  </div>
-                                ))
+                            {getSpecialVersionsList(selectedGame).map(
+                              (v, i) => (
+                                <div key={i} className='popup-entry'>
+                                  <p className='text-2xl'>
+                                    {getVersionGame(v.game)?.name} v
+                                    {v.versionName}
+                                  </p>
+                                  <button
+                                    className='button right-2 bottom-2'
+                                    onClick={() => {
+                                      setSelectedVersionList(prev =>
+                                        prev.includes(v.id)
+                                          ? prev.filter(i => i !== v.id)
+                                          : [...prev, v.id]
+                                      )
+                                    }}
+                                  >
+                                    {selectedVersionList.includes(v.id) ? (
+                                      <>
+                                        <FontAwesomeIcon icon={faRemove} />{' '}
+                                        Remove
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FontAwesomeIcon icon={faAdd} /> Add
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )
                             )}
+                          </div>
+                        </>
+                      ) : popupMode === 0 && !selectedGame ? (
+                        <>
+                          <p className='text-xl text-center'>
+                            Select a game to download
+                          </p>
+                          <div className='popup-content'>
+                            {serverVersionList?.games.map((v, i) => (
+                              <div key={i} className='popup-entry'>
+                                <p className='text-2xl'>{v.name}</p>
+                                <button
+                                  className='button right-2 bottom-2'
+                                  onClick={() => setSelectedGame(v.id)}
+                                >
+                                  <>
+                                    <FontAwesomeIcon icon={faDownload} />{' '}
+                                    Download
+                                  </>
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </>
                       ) : popupMode === 1 ? (
@@ -447,7 +533,7 @@ export default function RootLayout ({
                           <div className='popup-content'>
                             {downloadProgress.length === 0 ? (
                               <p className='text-center mt-6'>
-                                Nothing here...
+                                No more downloads!
                               </p>
                             ) : (
                               downloadProgress.map((v, i) => (
@@ -456,7 +542,12 @@ export default function RootLayout ({
                                   className='popup-entry flex flex-col justify-between'
                                 >
                                   <p className='text-2xl'>
-                                    Berry Dash v{v.version.displayName}
+                                    {
+                                      getVersionGame(
+                                        getVersionInfo(v.version)?.game
+                                      )?.name
+                                    }{' '}
+                                    v{getVersionInfo(v.version)?.versionName}
                                   </p>
                                   <div className='mt-[25px] flex items-center justify-between'>
                                     {v.failed ? (
@@ -467,13 +558,13 @@ export default function RootLayout ({
                                           </span>
                                           <button
                                             className='button ml-30 mb-2'
-                                            onClick={() =>
+                                            onClick={() => {
                                               setDownloadProgress(prev =>
                                                 prev.filter(
-                                                  (_, idx) => idx !== i
+                                                  d => d.version !== v.version
                                                 )
                                               )
-                                            }
+                                            }}
                                           >
                                             Cancel
                                           </button>
@@ -498,15 +589,20 @@ export default function RootLayout ({
                         managingVersion ? (
                           <>
                             <p className='text-xl text-center'>
-                              Manage version{' '}
-                              {managingVersion.version.displayName}
+                              Manage{' '}
+                              {
+                                getVersionGame(
+                                  getVersionInfo(managingVersion)?.game
+                                )?.name
+                              }{' '}
+                              v{getVersionInfo(managingVersion)?.versionName}
                             </p>
                             <div className='popup-content flex flex-col items-center justify-center gap-2 h-full'>
                               <button
                                 className='button'
                                 onClick={() =>
                                   invoke('uninstall_version', {
-                                    name: managingVersion.version.version
+                                    name: managingVersion
                                   })
                                 }
                               >
@@ -516,32 +612,11 @@ export default function RootLayout ({
                                 className='button'
                                 onClick={async () =>
                                   invoke('open_folder', {
-                                    name: managingVersion.version.version
+                                    name: managingVersion
                                   })
                                 }
                               >
                                 Open Folder
-                              </button>
-                              <button
-                                className='button'
-                                style={{
-                                  display:
-                                    platform() == 'macos' ? 'block' : 'none'
-                                }}
-                                onClick={async () => {
-                                  const exe =
-                                    managingVersion.version.executables[
-                                      managingVersion.version.platforms.indexOf(
-                                        platform()
-                                      )
-                                    ]
-                                  await invoke('fix_mac_permissions', {
-                                    name: managingVersion.version.version,
-                                    executable: exe
-                                  })
-                                }}
-                              >
-                                Fix permissions
                               </button>
                             </div>
                           </>
@@ -551,58 +626,44 @@ export default function RootLayout ({
                           </p>
                         )
                       ) : null}
-                      {popupMode == 0 && versionList != null && (
-                        <div className='flex justify-center'>
-                          <button
-                            className='button w-fit mt-2 mb-[-16px]'
-                            onClick={() => {
-                              setFadeOut(true)
-                              setTimeout(() => setShowPopup(false), 200)
-                              downloadVersions(selectedVersionList)
-                            }}
-                          >
-                            Download {selectedVersionList.length} version
-                            {selectedVersionList.length == 1 ? '' : 's'}
-                          </button>
-                          <button
-                            className='button w-fit mt-2 ml-2 mb-[-16px]'
-                            onClick={() => {
-                              const filtered = versionList.filter(
-                                v =>
-                                  !downloadedVersionsConfig?.list.some(
-                                    dv => dv.version.version === v.version
-                                  )
-                              )
-                              if (
-                                selectedVersionList.length ===
-                                  filtered.length &&
-                                filtered.every(v =>
-                                  selectedVersionList.includes(v)
+                      {popupMode == 0 &&
+                        selectedGame &&
+                        serverVersionList != null && (
+                          <div className='flex justify-center'>
+                            <button
+                              className='button w-fit mt-2 -mb-4'
+                              onClick={() => {
+                                setFadeOut(true)
+                                setTimeout(() => setShowPopup(false), 200)
+                                downloadVersions()
+                              }}
+                            >
+                              Download {selectedVersionList.length} version
+                              {selectedVersionList.length == 1 ? '' : 's'}
+                            </button>
+                            <button
+                              className='button w-fit mt-2 ml-2 -mb-4'
+                              onClick={() => {
+                                const allIds = getSpecialVersionsList(
+                                  selectedGame
+                                ).map(v => v.id)
+                                setSelectedVersionList(prev =>
+                                  prev.length === allIds.length ? [] : allIds
                                 )
-                              ) {
-                                setSelectedVersionList([])
-                              } else {
-                                setSelectedVersionList(filtered)
-                              }
-                            }}
-                          >
-                            {selectedVersionList.length ===
-                            versionList.filter(
-                              v =>
-                                !downloadedVersionsConfig?.list.some(
-                                  dv => dv.version.version === v.version
-                                )
-                            ).length
-                              ? 'Deselect All'
-                              : 'Select All'}
-                          </button>
-                        </div>
-                      )}
+                              }}
+                            >
+                              {selectedVersionList.length ===
+                              getSpecialVersionsList(selectedGame).length
+                                ? 'Deselect All'
+                                : 'Select All'}
+                            </button>
+                          </div>
+                        )}
                     </div>
                   </div>
                 )}
               </div>
-            </>
+            </GlobalProvider>
           )}
         </body>
       </html>

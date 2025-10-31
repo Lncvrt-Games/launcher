@@ -8,126 +8,118 @@ import {
   readTextFile,
   writeFile
 } from '@tauri-apps/plugin-fs'
-import { decrypt, encrypt } from './Encryption'
 import { VersionsConfig } from '../types/VersionsConfig'
-import { getKey } from './KeysHelper'
 
-export async function readNormalConfig (): Promise<NormalConfig> {
+export async function readNormalConfig(): Promise<NormalConfig> {
   const version = await app.getVersion()
   try {
     const options = {
       baseDir: BaseDirectory.AppLocalData
     }
     const doesFolderExist = await exists('', options)
-    const doesConfigExist = await exists('config.dat', options)
+    const doesConfigExist = await exists('config.json', options)
     if (!doesFolderExist || !doesConfigExist) {
       if (!doesFolderExist) {
         await mkdir('', options)
       }
-      const file = await create('config.dat', options)
+      const file = await create('config.json', options)
       await file.write(
         new TextEncoder().encode(
-          await encrypt(
-            JSON.stringify(new NormalConfig(version)),
-            await getKey(2)
-          )
+          JSON.stringify(new NormalConfig(version), null, 2),
         )
       )
       await file.close()
       return new NormalConfig(version)
     }
-    const config = await readTextFile('config.dat', options)
+    const config = await readTextFile('config.json', options)
     return NormalConfig.import(
-      JSON.parse(await decrypt(config, await getKey(2)))
+      JSON.parse(config)
     )
   } catch {
     return new NormalConfig(version)
   }
 }
 
-export async function writeNormalConfig (data: NormalConfig) {
+export async function writeNormalConfig(data: NormalConfig) {
   const options = {
     baseDir: BaseDirectory.AppLocalData
   }
   const doesFolderExist = await exists('', options)
-  const doesConfigExist = await exists('config.dat', options)
+  const doesConfigExist = await exists('config.json', options)
   if (!doesFolderExist || !doesConfigExist) {
     if (!doesFolderExist) {
       await mkdir('', options)
     }
-    const file = await create('config.dat', options)
+    const file = await create('config.json', options)
     await file.write(
       new TextEncoder().encode(
-        await encrypt(JSON.stringify(data), await getKey(2))
+        JSON.stringify(data, null, 2)
       )
     )
     await file.close()
   } else {
     await writeFile(
-      'config.dat',
+      'config.json',
       new TextEncoder().encode(
-        await encrypt(JSON.stringify(data), await getKey(2))
+        JSON.stringify(data, null, 2)
       ),
       options
     )
   }
 }
 
-export async function readVersionsConfig (): Promise<VersionsConfig> {
+export async function readVersionsConfig(): Promise<VersionsConfig> {
   const version = await app.getVersion()
   try {
     const options = {
       baseDir: BaseDirectory.AppLocalData
     }
     const doesFolderExist = await exists('', options)
-    const doesConfigExist = await exists('versions.dat', options)
+    const doesConfigExist = await exists('versions.json', options)
     if (!doesFolderExist || !doesConfigExist) {
       if (!doesFolderExist) {
         await mkdir('', options)
       }
-      const file = await create('versions.dat', options)
+      const file = await create('versions.json', options)
       await file.write(
         new TextEncoder().encode(
-          await encrypt(
-            JSON.stringify(new VersionsConfig(version)),
-            await getKey(3)
-          )
+          JSON.stringify(new VersionsConfig(version), null, 2)
         )
       )
       await file.close()
       return new VersionsConfig(version)
     }
-    const config = await readTextFile('versions.dat', options)
+    const config = await readTextFile('versions.json', options)
     return VersionsConfig.import(
-      JSON.parse(await decrypt(config, await getKey(3)))
+      JSON.parse(config)
     )
   } catch {
     return new VersionsConfig(version)
   }
 }
 
-export async function writeVersionsConfig (data: VersionsConfig) {
+export async function writeVersionsConfig(data: VersionsConfig) {
   const options = {
     baseDir: BaseDirectory.AppLocalData
   }
   const doesFolderExist = await exists('', options)
-  const doesConfigExist = await exists('versions.dat', options)
+  const doesConfigExist = await exists('versions.json', options)
   if (!doesFolderExist || !doesConfigExist) {
     if (!doesFolderExist) {
       await mkdir('', options)
     }
-    const file = await create('versions.dat', options)
+    const file = await create('versions.json', options)
     await file.write(
       new TextEncoder().encode(
-        await encrypt(JSON.stringify(data), await getKey(3))
+        JSON.stringify(data, null, 2)
       )
     )
     await file.close()
   } else {
     await writeFile(
-      'versions.dat',
+      'versions.json',
       new TextEncoder().encode(
-        await encrypt(JSON.stringify(data), await getKey(3))
+        JSON.stringify(data, null, 2)
       ),
       options
     )

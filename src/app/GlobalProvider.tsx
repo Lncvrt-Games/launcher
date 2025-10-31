@@ -1,17 +1,18 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
-import { LauncherVersion } from './types/LauncherVersion'
 import { DownloadProgress } from './types/DownloadProgress'
 import { VersionsConfig } from './types/VersionsConfig'
 import { NormalConfig } from './types/NormalConfig'
-import { DownloadedVersion } from './types/DownloadedVersion'
+import { ServerVersionsResponse } from './types/ServerVersionsResponse'
+import { GameVersion } from './types/GameVersion'
+import { Game } from './types/Game'
+import { ReadonlyURLSearchParams } from 'next/navigation'
 
 type GlobalCtxType = {
-  versionList: LauncherVersion[] | null
-  setVersionList: (v: LauncherVersion[] | null) => void
-  selectedVersionList: LauncherVersion[]
-  setSelectedVersionList: (v: LauncherVersion[]) => void
+  serverVersionList: ServerVersionsResponse | null
+  selectedVersionList: string[]
+  setSelectedVersionList: (v: string[]) => void
   downloadProgress: DownloadProgress[]
   setDownloadProgress: (v: DownloadProgress[]) => void
   showPopup: boolean
@@ -24,8 +25,12 @@ type GlobalCtxType = {
   setDownloadedVersionsConfig: (v: VersionsConfig | null) => void
   normalConfig: NormalConfig | null
   setNormalConfig: (v: NormalConfig | null) => void
-  managingVersion: DownloadedVersion | null
-  setManagingVersion: (v: DownloadedVersion | null) => void
+  managingVersion: string | null
+  setManagingVersion: (v: string | null) => void
+  setSelectedGame: (v: number | null) => void
+  getVersionInfo: (id: string | undefined) => GameVersion | undefined
+  getVersionGame: (id: number | undefined) => Game | undefined
+  getListOfGames: () => Game[]
 }
 
 const GlobalCtx = createContext<GlobalCtxType | null>(null)
