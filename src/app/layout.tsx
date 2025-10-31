@@ -257,6 +257,7 @@ export default function RootLayout ({
       if (a === 'x86') return findUrl('windows-x86')
       if (a === 'x86_64')
         return findUrl('windows-x64') || findUrl('windows-x86')
+      if (a === 'aarch64') return findUrl('windows-arm64')
     }
 
     if (p === 'macos' || p === 'linux') {
