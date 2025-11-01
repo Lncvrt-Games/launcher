@@ -59,9 +59,6 @@ export default function Installs () {
                 <div key={i.id} className='downloads-entry'>
                   <div className='flex flex-col'>
                     <p className='text-2xl'>{i.name}</p>
-                    <p className='text-gray-400 text-md'>
-                      Installed {format(new Date(), 'MM/dd/yyyy')}
-                    </p>
                   </div>
                   <div className='flex flex-row items-center gap-2'>
                     <Link className='button' href={'/game?id=' + i.id}>

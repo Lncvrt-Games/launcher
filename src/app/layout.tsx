@@ -201,7 +201,6 @@ export default function RootLayout ({
         }
 
         if (p === 'windows') {
-          if (a === 'x86') return v.platforms.includes('windows-x86')
           if (a === 'x86_64')
             return (
               v.platforms.includes('windows-x86') ||
@@ -228,7 +227,6 @@ export default function RootLayout ({
     }
 
     if (p === 'windows') {
-      if (a === 'x86') return findUrl('windows-x86')
       if (a === 'x86_64')
         return findUrl('windows-x64') || findUrl('windows-x86')
       if (a === 'aarch64') return findUrl('windows-arm64')
@@ -254,7 +252,6 @@ export default function RootLayout ({
     }
 
     if (p === 'windows') {
-      if (a === 'x86') return findUrl('windows-x86')
       if (a === 'x86_64')
         return findUrl('windows-x64') || findUrl('windows-x86')
       if (a === 'aarch64') return findUrl('windows-arm64')
