@@ -141,7 +141,7 @@ export default function RootLayout ({
         setLoadingText('Checking latest version...')
         try {
           const response = await axios.get(
-            'https://games.lncvrt.xyz/database/launcher/latest.php'
+            'https://games.lncvrt.xyz/api/launcher/latest'
           )
           const client = await app.getVersion()
           if (response.data !== client) {
@@ -169,6 +169,12 @@ export default function RootLayout ({
       setDownloadedVersionsConfig(versionsConfig)
       setNormalConfig(normalConfig)
       setLoading(false)
+
+      let permissionGranted = await isPermissionGranted()
+      if (!permissionGranted) {
+        const permission = await requestPermission()
+        permissionGranted = permission === 'granted'
+      }
     })()
   }, [])
 
@@ -311,6 +317,13 @@ export default function RootLayout ({
         )
         return
       }
+      const gameInfo = getVersionGame(info.game)
+      if (!gameInfo) {
+        setDownloadProgress(prev =>
+          prev.filter(d => d.version !== download.version)
+        )
+        return
+      }
       const downloadLink = getDownloadLink(info)
       if (!downloadLink) {
         setDownloadProgress(prev =>
@@ -359,8 +372,14 @@ export default function RootLayout ({
               : d
           )
         )
+        await notifyUser(
+          'Download Failed',
+          `The download for version ${gameInfo.name} v${info.versionName} has failed.`
+        )
       }
     }
+
+    await notifyUser('Downloads Finished', 'All downloads have finished.')
   }
 
   return (
