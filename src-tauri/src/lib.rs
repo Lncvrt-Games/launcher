@@ -60,6 +60,7 @@ async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> String {
     }
 }
 
+#[allow(unused_variables)]
 #[tauri::command]
 async fn download(app: AppHandle, url: String, name: String, executable: String) -> String {
     let client = reqwest::Client::new();
