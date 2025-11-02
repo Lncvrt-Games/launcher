@@ -73,13 +73,15 @@ export default function Installs () {
                       {getVersionGame(getVersionInfo(entry)?.game)?.name} v
                       {getVersionInfo(entry)?.versionName}
                     </p>
-                    <p className='text-gray-400 text-md'>
-                      Installed{' '}
-                      {format(
-                        new Date(downloadedVersionsConfig.timestamps[entry]),
-                        'MM/dd/yyyy'
-                      )}
-                    </p>
+                    <div className='entry-info-item'>
+                      <p>
+                        Installed{' '}
+                        {format(
+                          new Date(downloadedVersionsConfig.timestamps[entry]),
+                          'MM/dd/yyyy'
+                        )}
+                      </p>
+                    </div>
                   </div>
                   <div className='flex flex-row items-center gap-2'>
                     <button

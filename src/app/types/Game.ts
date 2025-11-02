@@ -3,5 +3,6 @@ export interface Game {
   name: string
   official: boolean
   verified: boolean
+  developer: string | null
   cutOff: number | null
 }

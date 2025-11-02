@@ -7,7 +7,6 @@ import { NormalConfig } from './types/NormalConfig'
 import { ServerVersionsResponse } from './types/ServerVersionsResponse'
 import { GameVersion } from './types/GameVersion'
 import { Game } from './types/Game'
-import { ReadonlyURLSearchParams } from 'next/navigation'
 
 type GlobalCtxType = {
   serverVersionList: ServerVersionsResponse | null
@@ -31,6 +30,10 @@ type GlobalCtxType = {
   getVersionInfo: (id: string | undefined) => GameVersion | undefined
   getVersionGame: (id: number | undefined) => Game | undefined
   getListOfGames: () => Game[]
+  getVersionsAmountData: (gameId: number) => {
+    installed: number
+    total: number
+  } | null
 }
 
 const GlobalCtx = createContext<GlobalCtxType | null>(null)

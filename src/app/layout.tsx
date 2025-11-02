@@ -9,9 +9,13 @@ import { invoke } from '@tauri-apps/api/core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faAdd,
+  faCheck,
   faChevronLeft,
+  faCode,
   faDownload,
   faRemove,
+  faShieldHalved,
+  faWarning,
   faXmark
 } from '@fortawesome/free-solid-svg-icons'
 import {
@@ -35,7 +39,6 @@ import { ServerVersionsResponse } from './types/ServerVersionsResponse'
 import { GameVersion } from './types/GameVersion'
 import { Game } from './types/Game'
 import { listen } from '@tauri-apps/api/event'
-import { usePathname, useSearchParams } from 'next/navigation'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -382,6 +385,48 @@ export default function RootLayout ({
     await notifyUser('Downloads Finished', 'All downloads have finished.')
   }
 
+  function getVersionsAmountData (gameId: number): {
+    installed: number
+    total: number
+  } | null {
+    if (!downloadedVersionsConfig || !serverVersionList) return null
+
+    const p = platform()
+    const a = arch()
+
+    const installed = downloadedVersionsConfig.list.filter(
+      v => getVersionGame(getVersionInfo(v)?.game)?.id === gameId
+    ).length
+
+    const total = serverVersionList.versions
+      .filter(v => {
+        if (p === 'macos' || p === 'linux') {
+          if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
+            return (
+              v.platforms.includes('windows-x86') ||
+              v.platforms.includes('windows-x64') ||
+              v.platforms.includes(p)
+            )
+          }
+          return v.platforms.includes(p)
+        }
+
+        if (p === 'windows') {
+          if (a === 'x86_64')
+            return (
+              v.platforms.includes('windows-x86') ||
+              v.platforms.includes('windows-x64')
+            )
+          if (a === 'aarch64') return v.platforms.includes('windows-arm64')
+        }
+
+        return false
+      })
+      .filter(v => getVersionGame(v?.game)?.id === gameId).length
+
+    return { installed, total }
+  }
+
   return (
     <>
       <html lang='en' className={roboto.className}>
@@ -430,7 +475,8 @@ export default function RootLayout ({
                 getVersionInfo,
                 getVersionGame,
                 getListOfGames,
-                setSelectedGame
+                setSelectedGame,
+                getVersionsAmountData
               }}
             >
               <div
@@ -531,6 +577,52 @@ export default function RootLayout ({
                             {serverVersionList?.games.map((v, i) => (
                               <div key={i} className='popup-entry'>
                                 <p className='text-2xl'>{v.name}</p>
+                                <div className='flex gap-2'>
+                                  <div className='entry-info-item'>
+                                    <p>
+                                      {(() => {
+                                        const data = getVersionsAmountData(v.id)
+                                        if (!data) return 'N/A'
+                                        return `${data.installed}/${data.total}`
+                                      })()}{' '}
+                                      versions installed
+                                    </p>
+                                  </div>
+                                  <div
+                                    className='entry-info-item'
+                                    hidden={!v.official}
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={faCheck}
+                                      color='#19c84b'
+                                    />
+                                    <p>Official</p>
+                                  </div>
+                                  <div
+                                    className='entry-info-item'
+                                    hidden={v.official}
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={
+                                        v.verified ? faShieldHalved : faWarning
+                                      }
+                                      color={v.verified ? '#19c84b' : '#ffc800'}
+                                    />
+                                    <p>
+                                      {v.verified ? 'Verified' : 'Unverified'}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div
+                                  className='entry-info-item mt-2'
+                                  hidden={v.official}
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faCode}
+                                    color='lightgray'
+                                  />
+                                  <p>Developer: {v.developer}</p>
+                                </div>
                                 <button
                                   className='button right-2 bottom-2'
                                   onClick={() => setSelectedGame(v.id)}

@@ -59,7 +59,7 @@ body {
 }
 
 .popup-entry {
-  @apply relative h-[100px] bg-[#323232] m-2 p-2 rounded-lg border border-[#646464];
+  @apply relative h-fit bg-[#323232] m-2 p-2 rounded-lg border border-[#646464];
 }
 
 .popup-entry button {
@@ -76,4 +76,12 @@ body {
 
 .input-field {
   @apply border-2 border-[#484848] rounded-md bg-[#242424] p-2 px-4 focus:border-blue-600 transition-colors;
+}
+
+.entry-info-item {
+  @apply flex flex-row items-center gap-1 bg-[rgb(16,16,16)] text-gray-300 py-1 px-2 rounded-lg w-fit text-[16px];
+}
+
+.downloads-entry:hover .entry-info-item {
+  @apply bg-[rgb(32,32,32)];
 }

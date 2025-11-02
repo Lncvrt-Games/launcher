@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect } from 'react'
-import { platform } from '@tauri-apps/plugin-os'
 import './Installs.css'
-import { format } from 'date-fns'
-import { invoke } from '@tauri-apps/api/core'
-import { message } from '@tauri-apps/plugin-dialog'
 import { useGlobal } from './GlobalProvider'
 import Link from 'next/link'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCheck,
+  faShieldHalved,
+  faWarning
+} from '@fortawesome/free-solid-svg-icons'
 
 export default function Installs () {
   const {
@@ -19,11 +21,9 @@ export default function Installs () {
     setSelectedVersionList,
     downloadedVersionsConfig,
     normalConfig,
-    setManagingVersion,
-    getVersionInfo,
-    getVersionGame,
     setSelectedGame,
-    getListOfGames
+    getListOfGames,
+    getVersionsAmountData
   } = useGlobal()
 
   useEffect(() => {
@@ -59,6 +59,29 @@ export default function Installs () {
                 <div key={i.id} className='downloads-entry'>
                   <div className='flex flex-col'>
                     <p className='text-2xl'>{i.name}</p>
+                    <div className='flex gap-2'>
+                      <div className='entry-info-item'>
+                        <p>
+                          {(() => {
+                            const data = getVersionsAmountData(i.id)
+                            if (!data) return 'N/A'
+                            return `${data.installed}/${data.total}`
+                          })()}{' '}
+                          versions installed
+                        </p>
+                      </div>
+                      <div className='entry-info-item' hidden={!i.official}>
+                        <FontAwesomeIcon icon={faCheck} color='#19c84b' />
+                        <p>Official</p>
+                      </div>
+                      <div className='entry-info-item' hidden={i.official}>
+                        <FontAwesomeIcon
+                          icon={i.verified ? faShieldHalved : faWarning}
+                          color={i.verified ? '#19c84b' : '#ffc800'}
+                        />
+                        <p>{i.verified ? 'Verified' : 'Unverified'}</p>
+                      </div>
+                    </div>
                   </div>
                   <div className='flex flex-row items-center gap-2'>
                     <Link className='button' href={'/game?id=' + i.id}>
