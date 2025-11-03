@@ -1,7 +1,67 @@
 @import "tailwindcss";
 
 body {
-  @apply bg-[#0f0f0f] text-white select-none;
+  @apply bg-(--col0) text-white select-none;
+}
+
+.dark-theme {
+  --col0: rgb(8, 8, 8);
+  --col1: rgb(16, 16, 16);
+  --col2: rgb(32, 32, 32);
+  --col3: rgb(48, 48, 48);
+  --col4: rgb(64, 64, 64);
+  --col5: rgb(80, 80, 80);
+  --col6: rgb(96, 96, 96);
+  --col7: rgb(112, 112, 112);
+  --col8: rgb(128, 128, 128);
+}
+
+.red-theme {
+  --col0: rgb(32, 8, 8);
+  --col1: rgb(40, 16, 16);
+  --col2: rgb(56, 32, 32);
+  --col3: rgb(72, 48, 48);
+  --col4: rgb(88, 64, 64);
+  --col5: rgb(104, 80, 80);
+  --col6: rgb(120, 96, 96);
+  --col7: rgb(136, 112, 112);
+  --col8: rgb(152, 128, 128);
+}
+
+.green-theme {
+  --col0: rgb(8, 32, 8);
+  --col1: rgb(16, 40, 16);
+  --col2: rgb(32, 56, 32);
+  --col3: rgb(48, 72, 48);
+  --col4: rgb(64, 88, 64);
+  --col5: rgb(80, 104, 80);
+  --col6: rgb(96, 120, 96);
+  --col7: rgb(112, 136, 112);
+  --col8: rgb(128, 152, 128);
+}
+
+.blue-theme {
+  --col0: rgb(8, 8, 32);
+  --col1: rgb(16, 16, 40);
+  --col2: rgb(32, 32, 56);
+  --col3: rgb(48, 48, 72);
+  --col4: rgb(64, 64, 88);
+  --col5: rgb(80, 80, 104);
+  --col6: rgb(96, 96, 120);
+  --col7: rgb(112, 112, 136);
+  --col8: rgb(128, 128, 152);
+}
+
+.purple-theme {
+  --col0: rgb(20, 8, 32);
+  --col1: rgb(28, 16, 40);
+  --col2: rgb(44, 32, 56);
+  --col3: rgb(60, 48, 72);
+  --col4: rgb(76, 64, 88);
+  --col5: rgb(92, 80, 104);
+  --col6: rgb(108, 96, 120);
+  --col7: rgb(124, 112, 136);
+  --col8: rgb(140, 128, 152);
 }
 
 .button {
@@ -17,11 +77,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-[#1f1f1f] rounded-lg;
+  @apply bg-(--col2) rounded-lg;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#555] w-1 rounded-lg active:bg-[#888];
+  @apply bg-(--col4) w-1 rounded-lg active:bg-(--col5);
 }
 
 @keyframes fadeIn {
@@ -51,15 +111,15 @@ body {
 }
 
 .popup-box {
-  @apply relative w-[60vw] h-[80vh] rounded-lg bg-[#161616] border border-[#323232] flex flex-col p-6;
+  @apply relative w-[60vw] h-[80vh] rounded-lg bg-(--col1) border border-(--col3) flex flex-col p-6;
 }
 
 .popup-content {
-  @apply flex-1 overflow-auto bg-[#242424] border border-[#484848] rounded-lg mt-4;
+  @apply flex-1 overflow-auto bg-(--col2) border border-(--col4) rounded-lg mt-4;
 }
 
 .popup-entry {
-  @apply relative h-fit bg-[#323232] m-2 p-2 rounded-lg border border-[#646464];
+  @apply relative h-fit bg-(--col3) m-2 p-2 rounded-lg border border-(--col5);
 }
 
 .popup-entry button {
@@ -67,7 +127,7 @@ body {
 }
 
 .close-button {
-  @apply flex justify-center items-center absolute bg-[#323232] hover:bg-[#484848] text-2xl cursor-pointer text-gray-300 hover:text-white h-12 w-12 p-3 rounded-xl left-2 top-2 transition-colors border border-[#484848] hover:border-[#646464];
+  @apply flex justify-center items-center absolute bg-(--col3) hover:bg-(--col4) text-2xl cursor-pointer text-gray-300 hover:text-white h-12 w-12 p-3 rounded-xl left-2 top-2 transition-colors border border-(--col4) hover:border-(--col5);
 }
 
 *:focus {
@@ -75,13 +135,13 @@ body {
 }
 
 .input-field {
-  @apply border-2 border-[#484848] rounded-md bg-[#242424] p-2 px-4 focus:border-blue-600 transition-colors;
+  @apply border-2 border-(--col4) rounded-md bg-(--col2) p-2 px-4 focus:border-blue-600 transition-colors;
 }
 
 .entry-info-item {
-  @apply flex flex-row items-center gap-1 bg-[rgb(16,16,16)] text-gray-300 py-1 px-2 rounded-lg w-fit text-[16px];
+  @apply flex flex-row items-center gap-1 bg-(--col1) text-gray-300 py-1 px-2 rounded-lg w-fit text-[16px];
 }
 
 .downloads-entry:hover .entry-info-item {
-  @apply bg-[rgb(32,32,32)];
+  @apply bg-(--col2);
 }

@@ -343,7 +343,19 @@ export default function RootLayout ({
   return (
     <>
       <html lang='en' className={roboto.className}>
-        <body>
+        <body
+          className={
+            normalConfig?.settings.theme === 1
+              ? 'red-theme'
+              : normalConfig?.settings.theme === 2
+              ? 'green-theme'
+              : normalConfig?.settings.theme === 3
+              ? 'blue-theme'
+              : normalConfig?.settings.theme === 4
+              ? 'purple-theme'
+              : 'dark-theme'
+          }
+        >
           {loading ? (
             <div className='w-screen h-screen flex items-center justify-center'>
               {outdated ? (
@@ -408,7 +420,7 @@ export default function RootLayout ({
               >
                 <Sidebar />
                 <div
-                  className='relative z-2 ml-[239px] w-[761px] border-b border-[#242424] h-[33px] bg-[#161616]'
+                  className='relative z-2 ml-[239px] w-[761px] border-b border-(--col3) h-[33px] bg-(--col1)'
                   style={{
                     display: platform() === 'windows' ? 'block' : 'none'
                   }}

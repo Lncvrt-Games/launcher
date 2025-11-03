@@ -9,6 +9,8 @@ export default function Settings () {
   const [allowNotifications, setAllowNotifications] = useState(false)
   const [alwaysShowGamesInSidebar, setAlwaysShowGamesInSidebar] =
     useState(false)
+  const [theme, setTheme] = useState(0)
+
   const [loaded, setLoaded] = useState(false)
   const { normalConfig, setNormalConfig } = useGlobal()
 
@@ -19,6 +21,7 @@ export default function Settings () {
         setAlwaysShowGamesInSidebar(
           normalConfig.settings.alwaysShowGamesInSidebar
         )
+        setTheme(normalConfig.settings.theme)
         setLoaded(true)
         break
       }
@@ -29,15 +32,27 @@ export default function Settings () {
     <>
       <p className='text-3xl ml-4 mt-4'>Settings</p>
       {loaded && (
-        <div className='ml-4 mt-4 bg-[#161616] border border-[#242424] rounded-lg p-4 w-fit h-fit'>
+        <div className='ml-4 mt-4 bg-(--col1) border border-(--col3) rounded-lg p-4 w-fit h-fit'>
           <Setting
             label='Allow sending notifications'
             value={allowNotifications}
             onChange={async () => {
               while (normalConfig != null) {
                 setAllowNotifications(!allowNotifications)
-                normalConfig.settings.allowNotifications = !allowNotifications
-                await writeNormalConfig(normalConfig)
+                setNormalConfig({
+                  ...normalConfig,
+                  settings: {
+                    ...normalConfig.settings,
+                    allowNotifications: !allowNotifications
+                  }
+                })
+                writeNormalConfig({
+                  ...normalConfig,
+                  settings: {
+                    ...normalConfig.settings,
+                    allowNotifications: !allowNotifications
+                  }
+                })
                 break
               }
             }}
@@ -66,6 +81,40 @@ export default function Settings () {
               }
             }}
           />
+          <div>
+            <label className='text-lg'>Theme:</label>
+            <select
+              className='ml-2 bg-(--col2) border border-(--col4) rounded-md'
+              value={theme}
+              onChange={async e => {
+                const newTheme = parseInt(e.target.value)
+                while (normalConfig != null) {
+                  setTheme(newTheme)
+                  setNormalConfig({
+                    ...normalConfig,
+                    settings: {
+                      ...normalConfig.settings,
+                      theme: newTheme
+                    }
+                  })
+                  writeNormalConfig({
+                    ...normalConfig,
+                    settings: {
+                      ...normalConfig.settings,
+                      theme: newTheme
+                    }
+                  })
+                  break
+                }
+              }}
+            >
+              <option value={0}>Dark (default)</option>
+              <option value={1}>Red</option>
+              <option value={2}>Green</option>
+              <option value={3}>Blue</option>
+              <option value={4}>Purple</option>
+            </select>
+          </div>
         </div>
       )}
     </>
