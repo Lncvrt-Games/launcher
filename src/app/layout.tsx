@@ -184,7 +184,7 @@ export default function RootLayout ({
       setLoadingText('Downloading version list...')
       try {
         const res = await axios.get(
-          `http://localhost:3342/launcher/versions?platform=${platform()}&arch=${arch()}`
+          `https://games.lncvrt.xyz/api/launcher/versions?platform=${platform()}&arch=${arch()}`
         )
         setServerVersionList(res.data)
       } catch {
