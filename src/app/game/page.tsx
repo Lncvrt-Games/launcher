@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { platform } from '@tauri-apps/plugin-os'
 import '../Installs.css'
 import { format } from 'date-fns'
 import { invoke } from '@tauri-apps/api/core'
-import { message } from '@tauri-apps/plugin-dialog'
 import { useGlobal } from '../GlobalProvider'
 import { useSearchParams } from 'next/navigation'
 
@@ -100,43 +98,9 @@ export default function Installs () {
                       onClick={async () => {
                         const verInfo = getVersionInfo(entry)
                         if (verInfo == undefined) return
-                        let plat = platform()
-                        let willUseWine = false
-                        let cfg = null
-                        while (normalConfig != null) {
-                          cfg = normalConfig
-                          break
-                        }
-                        if (plat === 'macos' || plat === 'linux') {
-                          if (
-                            !verInfo.platforms.includes(plat) &&
-                            verInfo.platforms.includes('windows')
-                          ) {
-                            if (
-                              cfg != null &&
-                              !cfg.settings.useWineOnUnixWhenNeeded
-                            ) {
-                              await message(
-                                'Wine support is disabled in settings and this version requires wine',
-                                {
-                                  title: 'Wine is needed to load this version',
-                                  kind: 'error'
-                                }
-                              )
-                              return
-                            }
-                            plat = 'windows'
-                            willUseWine = true
-                          }
-                        }
                         invoke('launch_game', {
                           name: verInfo.id,
-                          executable:
-                            verInfo.executables[
-                              verInfo.platforms.indexOf(plat)
-                            ],
-                          wine: willUseWine,
-                          wineCommand: cfg?.settings.wineOnUnixCommand
+                          executable: verInfo.executable
                         })
                       }}
                     >

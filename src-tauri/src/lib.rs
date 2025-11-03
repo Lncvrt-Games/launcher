@@ -1,4 +1,5 @@
 use futures_util::stream::StreamExt;
+use sha2::{Digest, Sha512};
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, copy},
@@ -62,7 +63,13 @@ async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> String {
 
 #[allow(unused_variables)]
 #[tauri::command]
-async fn download(app: AppHandle, url: String, name: String, executable: String) -> String {
+async fn download(
+    app: AppHandle,
+    url: String,
+    name: String,
+    executable: String,
+    hash: String,
+) -> String {
     let client = reqwest::Client::new();
     let resp = match client.get(&url).send().await {
         Ok(r) => r,
@@ -90,7 +97,9 @@ async fn download(app: AppHandle, url: String, name: String, executable: String)
         let _ = tokio::fs::remove_dir_all(&game_path.join(name.clone())).await;
     }
     let _ = tokio::fs::create_dir_all(&game_path.join(&name)).await;
-    let mut file = tokio::fs::File::create(download_part_path).await.unwrap();
+    let mut file = tokio::fs::File::create(download_part_path.clone())
+        .await
+        .unwrap();
 
     while let Ok(Some(chunk_result)) = timeout(Duration::from_secs(5), stream.next()).await {
         let chunk = match chunk_result {
@@ -120,12 +129,23 @@ async fn download(app: AppHandle, url: String, name: String, executable: String)
         return "-1".to_string();
     }
 
-    tokio::fs::rename(
-        downloads_path.join(format!("{}.part", name)),
-        download_zip_path.clone(),
-    )
-    .await
-    .unwrap();
+    app.emit("download-hash-checking", format!("{}", &name))
+        .unwrap();
+    let mut hasher = Sha512::new();
+    hasher.update(&tokio::fs::read(download_part_path.clone()).await.unwrap());
+    let download_hash = format!("{:x}", hasher.finalize());
+    if hash != download_hash {
+        tokio::fs::remove_file(download_part_path.clone())
+            .await
+            .unwrap();
+        return "-1".to_string();
+    }
+    app.emit("download-finishing", format!("{}", &name))
+        .unwrap();
+
+    tokio::fs::rename(download_part_path.clone(), download_zip_path.clone())
+        .await
+        .unwrap();
     let unzip_res = unzip_to_dir(download_zip_path.clone(), game_path.join(&name)).await;
     tokio::fs::remove_file(download_zip_path.clone())
         .await
@@ -167,7 +187,7 @@ async fn download(app: AppHandle, url: String, name: String, executable: String)
 
 #[allow(unused_variables)]
 #[tauri::command]
-fn launch_game(app: AppHandle, name: String, executable: String, wine: bool, wine_command: String) {
+fn launch_game(app: AppHandle, name: String, executable: String) {
     let game_folder = app
         .path()
         .app_local_data_dir()
@@ -183,54 +203,26 @@ fn launch_game(app: AppHandle, name: String, executable: String, wine: bool, win
             .show(|_| {});
         return;
     }
-    let result = if wine && platform() == "linux" {
-        #[cfg(target_os = "linux")]
-        {
-            let wine_cmd_to_use =
-                wine_command.replace("%path%", &format!("\"{}\"", game_path.to_string_lossy()));
+    if is_running_by_path(&game_path) {
+        app.dialog()
+            .message(format!("The version {} is already running.", name))
+            .kind(MessageDialogKind::Error)
+            .title("Game already running")
+            .show(|_| {});
+        return;
+    }
 
-            let parts = shlex::split(&wine_cmd_to_use).expect("failed to split command");
-            let exe = &parts[0];
-            let args = &parts[1..];
-
-            Command::new(exe)
-                .args(args)
-                .current_dir(&game_folder)
-                .spawn()
-        }
-
-        #[cfg(not(target_os = "linux"))]
-        {
-            Err(std::io::Error::new(std::io::ErrorKind::Other, "not linux"))
-        }
+    if platform() == "macos" {
+        Command::new("open")
+            .arg(&game_path)
+            .current_dir(&game_folder)
+            .spawn()
+            .unwrap();
     } else {
-        if is_running_by_path(&game_path) {
-            app.dialog()
-                .message(format!("The version {} is already running.", name))
-                .kind(MessageDialogKind::Error)
-                .title("Game already running")
-                .show(|_| {});
-            return;
-        }
-        if platform() == "macos" {
-            Command::new("open")
-                .arg(&game_path)
-                .current_dir(&game_folder)
-                .spawn()
-        } else {
-            Command::new(&game_path).current_dir(&game_folder).spawn()
-        }
-    };
-
-    match result {
-        Ok(_) => println!("Game launched successfully."),
-        Err(e) => {
-            app.dialog()
-                .message(format!("Failed to load game:\n{}\n\nTry reinstalling the game or make a support request in the Community link on the sidebar.", e))
-                .kind(MessageDialogKind::Error)
-                .title("Failed to launch game")
-                .show(|_| {});
-        }
+        Command::new(&game_path)
+            .current_dir(&game_folder)
+            .spawn()
+            .unwrap();
     }
 }
 

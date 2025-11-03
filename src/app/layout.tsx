@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import Sidebar from './componets/Sidebar'
 import './Globals.css'
 import { DownloadProgress } from './types/DownloadProgress'
-import { arch, platform } from '@tauri-apps/plugin-os'
 import { invoke } from '@tauri-apps/api/core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -40,6 +39,7 @@ import { GameVersion } from './types/GameVersion'
 import { Game } from './types/Game'
 import { listen } from '@tauri-apps/api/event'
 import { usePathname } from 'next/navigation'
+import { arch, platform } from '@tauri-apps/plugin-os'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -114,6 +114,28 @@ export default function RootLayout ({
       })
     }).then(f => (unlistenProgress = f))
 
+    listen<string>('download-hash-checking', event => {
+      const versionName = event.payload
+      setDownloadProgress(prev => {
+        const i = prev.findIndex(d => d.version === versionName)
+        if (i === -1) return prev
+        const copy = [...prev]
+        copy[i] = { ...copy[i], hash_checking: true }
+        return copy
+      })
+    }).then(f => (unlistenProgress = f))
+
+    listen<string>('download-finishing', event => {
+      const versionName = event.payload
+      setDownloadProgress(prev => {
+        const i = prev.findIndex(d => d.version === versionName)
+        if (i === -1) return prev
+        const copy = [...prev]
+        copy[i] = { ...copy[i], hash_checking: false, finishing: true }
+        return copy
+      })
+    }).then(f => (unlistenProgress = f))
+
     listen<string>('version-uninstalled', event => {
       const versionName = event.payload
       setDownloadedVersionsConfig(prev => {
@@ -162,7 +184,7 @@ export default function RootLayout ({
       setLoadingText('Downloading version list...')
       try {
         const res = await axios.get(
-          'https://games.lncvrt.xyz/api/launcher/versions'
+          `http://localhost:3342/launcher/versions?platform=${platform()}&arch=${arch()}`
         )
         setServerVersionList(res.data)
       } catch {
@@ -193,90 +215,16 @@ export default function RootLayout ({
   function getSpecialVersionsList (game?: number): GameVersion[] {
     if (!normalConfig || !serverVersionList) return []
 
-    const useWine = normalConfig.settings.useWineOnUnixWhenNeeded
-    const p = platform()
-    const a = arch()
-
     return serverVersionList.versions
       .filter(v => !downloadedVersionsConfig?.list.includes(v.id))
       .filter(v => {
         if (game && v.game != game) return false
-        if (p === 'macos' || p === 'linux') {
-          if (useWine) {
-            return (
-              v.platforms.includes('windows-x86') ||
-              v.platforms.includes('windows-x64') ||
-              v.platforms.includes(p)
-            )
-          }
-          return v.platforms.includes(p)
-        }
-
-        if (p === 'windows') {
-          if (a === 'x86_64')
-            return (
-              v.platforms.includes('windows-x86') ||
-              v.platforms.includes('windows-x64')
-            )
-          if (a === 'aarch64') return v.platforms.includes('windows-arm64')
-        }
-
-        return false
+        return true
       })
       .sort((a, b) => {
         if (b.game !== a.game) return a.game - b.game
-        return b.place - a.place
+        return 0
       })
-  }
-
-  function getDownloadLink (version: GameVersion): string | undefined {
-    const p = platform()
-    const a = arch()
-
-    const findUrl = (plat: string) => {
-      const i = version.platforms.indexOf(plat)
-      return i >= 0 ? version.downloadUrls[i] : undefined
-    }
-
-    if (p === 'windows') {
-      if (a === 'x86_64')
-        return findUrl('windows-x64') || findUrl('windows-x86')
-      if (a === 'aarch64') return findUrl('windows-arm64')
-    }
-
-    if (p === 'macos' || p === 'linux') {
-      if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
-        return findUrl('windows-x86') || findUrl('windows-x64') || findUrl(p)
-      }
-      return findUrl(p)
-    }
-
-    return undefined
-  }
-
-  function getExecutableName (version: GameVersion): string | undefined {
-    const p = platform()
-    const a = arch()
-
-    const findUrl = (plat: string) => {
-      const i = version.platforms.indexOf(plat)
-      return i >= 0 ? version.executables[i] : undefined
-    }
-
-    if (p === 'windows') {
-      if (a === 'x86_64')
-        return findUrl('windows-x64') || findUrl('windows-x86')
-      if (a === 'aarch64') return findUrl('windows-arm64')
-    }
-
-    if (p === 'macos' || p === 'linux') {
-      if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
-        return findUrl('windows-x86') || findUrl('windows-x64') || findUrl(p)
-      }
-      return findUrl(p)
-    }
-
-    return undefined
   }
 
   function getVersionInfo (id: string | undefined): GameVersion | undefined {
@@ -310,7 +258,7 @@ export default function RootLayout ({
     setSelectedVersionList([])
 
     const newDownloads = list.map(
-      version => new DownloadProgress(version, 0, false, true)
+      version => new DownloadProgress(version, 0, false, true, false, false)
     )
 
     setDownloadProgress(newDownloads)
@@ -330,29 +278,16 @@ export default function RootLayout ({
         )
         return
       }
-      const downloadLink = getDownloadLink(info)
-      if (!downloadLink) {
-        setDownloadProgress(prev =>
-          prev.filter(d => d.version !== download.version)
-        )
-        return
-      }
-      const executableName = getExecutableName(info)
-      if (!executableName) {
-        setDownloadProgress(prev =>
-          prev.filter(d => d.version !== download.version)
-        )
-        return
-      }
       setDownloadProgress(prev =>
         prev.map(d =>
           d.version === download.version ? { ...d, queued: false } : d
         )
       )
       const res = await invoke<string>('download', {
-        url: downloadLink,
+        url: info.downloadUrl,
         name: info.id,
-        executable: executableName
+        executable: info.executable,
+        hash: info.sha512sum
       })
       if (res == '1') {
         setDownloadProgress(prev =>
@@ -394,38 +329,13 @@ export default function RootLayout ({
   } | null {
     if (!downloadedVersionsConfig || !serverVersionList) return null
 
-    const p = platform()
-    const a = arch()
-
     const installed = downloadedVersionsConfig.list.filter(
       v => getVersionGame(getVersionInfo(v)?.game)?.id === gameId
     ).length
 
-    const total = serverVersionList.versions
-      .filter(v => {
-        if (p === 'macos' || p === 'linux') {
-          if (normalConfig?.settings.useWineOnUnixWhenNeeded) {
-            return (
-              v.platforms.includes('windows-x86') ||
-              v.platforms.includes('windows-x64') ||
-              v.platforms.includes(p)
-            )
-          }
-          return v.platforms.includes(p)
-        }
-
-        if (p === 'windows') {
-          if (a === 'x86_64')
-            return (
-              v.platforms.includes('windows-x86') ||
-              v.platforms.includes('windows-x64')
-            )
-          if (a === 'aarch64') return v.platforms.includes('windows-arm64')
-        }
-
-        return false
-      })
-      .filter(v => getVersionGame(v?.game)?.id === gameId).length
+    const total = serverVersionList.versions.filter(
+      v => getVersionGame(v?.game)?.id === gameId
+    ).length
 
     return { installed, total }
   }
@@ -689,6 +599,18 @@ export default function RootLayout ({
                                     ) : v.queued ? (
                                       <span className='text-yellow-500'>
                                         Queued…
+                                      </span>
+                                    ) : v.queued ? (
+                                      <span className='text-yellow-500'>
+                                        Queued…
+                                      </span>
+                                    ) : v.hash_checking ? (
+                                      <span className='text-blue-500'>
+                                        Checking hash...
+                                      </span>
+                                    ) : v.finishing ? (
+                                      <span className='text-green-500'>
+                                        Finishing...
                                       </span>
                                     ) : (
                                       <span>

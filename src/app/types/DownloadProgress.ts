@@ -3,6 +3,8 @@ export class DownloadProgress {
     public version: string,
     public progress: number,
     public failed: boolean,
-    public queued: boolean
+    public queued: boolean,
+    public hash_checking: boolean,
+    public finishing: boolean
   ) { }
 }
