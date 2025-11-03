@@ -56,14 +56,6 @@ export default function Installs () {
                 if (!info) return false
                 return info.game === Number(params.get('id') || 0)
               })
-              .sort((a, b) => {
-                const infoA = getVersionInfo(a)
-                const infoB = getVersionInfo(b)
-                if (!infoA && !infoB) return 0
-                if (!infoA) return 1
-                if (!infoB) return -1
-                return infoB.place - infoA.place
-              })
               .map((entry, i) => (
                 <div key={i} className='downloads-entry'>
                   <div className='flex flex-col'>
