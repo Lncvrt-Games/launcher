@@ -20,6 +20,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 
 export default function Sidebar () {
   const {
+    normalConfig,
     getListOfGames,
     setShowPopup,
     setPopupMode,
@@ -88,7 +89,11 @@ export default function Sidebar () {
                   ? 'active'
                   : ''
               } ml-auto w-50 ${
-                pathname === '/' || pathname === '/game' ? '' : 'hidden'
+                normalConfig?.settings.alwaysShowGamesInSidebar ||
+                pathname === '/' ||
+                pathname === '/game'
+                  ? ''
+                  : 'hidden'
               }`}
             >
               <FontAwesomeIcon icon={faGamepad} className='mr-1' />{' '}

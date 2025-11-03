@@ -39,6 +39,7 @@ import { ServerVersionsResponse } from './types/ServerVersionsResponse'
 import { GameVersion } from './types/GameVersion'
 import { Game } from './types/Game'
 import { listen } from '@tauri-apps/api/event'
+import { usePathname } from 'next/navigation'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -77,6 +78,8 @@ export default function RootLayout ({
       setTimeout(() => setShowPopup(false), 200)
     }
   }
+
+  const pathname = usePathname()
 
   const notifyUser = useCallback(
     async (title: string, body: string) => {
@@ -512,7 +515,11 @@ export default function RootLayout ({
                       <button
                         className='close-button'
                         onClick={() => {
-                          if (popupMode == 0 && selectedGame) {
+                          if (
+                            popupMode == 0 &&
+                            selectedGame &&
+                            pathname === '/'
+                          ) {
                             setSelectedGame(null)
                             setSelectedVersionList([])
                           } else {
@@ -523,7 +530,7 @@ export default function RootLayout ({
                       >
                         <FontAwesomeIcon
                           icon={
-                            popupMode == 0 && selectedGame
+                            popupMode == 0 && selectedGame && pathname === '/'
                               ? faChevronLeft
                               : faXmark
                           }

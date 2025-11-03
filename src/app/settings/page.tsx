@@ -8,10 +8,12 @@ import { useGlobal } from '../GlobalProvider'
 
 export default function Settings () {
   const [allowNotifications, setAllowNotifications] = useState(false)
+  const [alwaysShowGamesInSidebar, setAlwaysShowGamesInSidebar] =
+    useState(false)
   const [useWineOnUnixWhenNeeded, setUseWineOnUnixWhenNeeded] = useState(false)
   const [wineOnUnixCommand, setWineOnUnixCommand] = useState('wine %path%')
   const [loaded, setLoaded] = useState(false)
-  const { normalConfig } = useGlobal()
+  const { normalConfig, setNormalConfig } = useGlobal()
 
   useEffect(() => {
     ;(async () => {
@@ -21,6 +23,9 @@ export default function Settings () {
         )
         setWineOnUnixCommand(normalConfig.settings.wineOnUnixCommand)
         setAllowNotifications(normalConfig.settings.allowNotifications)
+        setAlwaysShowGamesInSidebar(
+          normalConfig.settings.alwaysShowGamesInSidebar
+        )
         setLoaded(true)
         break
       }
@@ -40,6 +45,30 @@ export default function Settings () {
                 setAllowNotifications(!allowNotifications)
                 normalConfig.settings.allowNotifications = !allowNotifications
                 await writeNormalConfig(normalConfig)
+                break
+              }
+            }}
+          />
+          <Setting
+            label='Always show games in sidebar'
+            value={alwaysShowGamesInSidebar}
+            onChange={async () => {
+              while (normalConfig != null) {
+                setAlwaysShowGamesInSidebar(!alwaysShowGamesInSidebar)
+                setNormalConfig({
+                  ...normalConfig,
+                  settings: {
+                    ...normalConfig.settings,
+                    alwaysShowGamesInSidebar: !alwaysShowGamesInSidebar
+                  }
+                })
+                writeNormalConfig({
+                  ...normalConfig,
+                  settings: {
+                    ...normalConfig.settings,
+                    alwaysShowGamesInSidebar: !alwaysShowGamesInSidebar
+                  }
+                })
                 break
               }
             }}
