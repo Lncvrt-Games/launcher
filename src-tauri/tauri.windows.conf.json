@@ -17,7 +17,7 @@
         "width": 1000,
         "height": 632,
         "minWidth": 875,
-        "minHeight": 500,
+        "minHeight": 532,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "decorations": false,
