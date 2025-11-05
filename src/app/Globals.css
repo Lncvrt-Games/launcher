@@ -139,9 +139,13 @@ body {
 }
 
 .entry-info-item {
-  @apply flex flex-row items-center gap-1 bg-(--col1) text-gray-300 py-1 px-2 rounded-lg w-fit text-[16px];
+  @apply flex flex-row items-center gap-1 bg-(--col1) border border-(--col3) text-gray-300 py-1 px-2 rounded-lg w-fit text-[16px] transition-colors;
 }
 
 .downloads-entry:hover .entry-info-item {
-  @apply bg-(--col2);
+  @apply bg-(--col2) border-(--col4);
+}
+
+.popup-content .entry-info-item:hover {
+  @apply bg-(--col3) border-(--col5);
 }

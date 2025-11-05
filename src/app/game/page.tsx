@@ -78,6 +78,17 @@ export default function Installs () {
                       className='button'
                       onClick={async () => {
                         setManagingVersion(entry)
+                        setPopupMode(3)
+                        setShowPopup(true)
+                        setFadeOut(false)
+                      }}
+                    >
+                      View Info
+                    </button>
+                    <button
+                      className='button'
+                      onClick={async () => {
+                        setManagingVersion(entry)
                         setPopupMode(2)
                         setShowPopup(true)
                         setFadeOut(false)

@@ -1,5 +1,7 @@
 use futures_util::stream::StreamExt;
 use sha2::{Digest, Sha512};
+use std::fs;
+use std::path::Path;
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, copy},
@@ -58,6 +60,38 @@ async fn unzip_to_dir(zip_path: PathBuf, out_dir: PathBuf) -> String {
     match res {
         Ok(Ok(())) => "1".into(),
         _ => "-1".into(),
+    }
+}
+
+#[tauri::command]
+fn folder_size(app: AppHandle, version: String) -> String {
+    let path = app
+        .path()
+        .app_local_data_dir()
+        .unwrap()
+        .join("game")
+        .join(&version);
+    fn inner(path: &Path) -> u64 {
+        let mut size = 0;
+        if let Ok(entries) = fs::read_dir(path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    if metadata.is_file() {
+                        size += metadata.len();
+                    } else if metadata.is_dir() {
+                        size += inner(&entry.path());
+                    }
+                }
+            }
+        }
+        size
+    }
+
+    let p = Path::new(&path);
+    if p.exists() && p.is_dir() {
+        inner(p).to_string()
+    } else {
+        "-1".to_string()
     }
 }
 
@@ -289,7 +323,8 @@ pub fn run() {
             download,
             launch_game,
             uninstall_version,
-            open_folder
+            open_folder,
+            folder_size
         ])
         .setup(|app| {
             #[cfg(target_os = "windows")]

@@ -40,6 +40,7 @@ import { Game } from './types/Game'
 import { listen } from '@tauri-apps/api/event'
 import { usePathname } from 'next/navigation'
 import { arch, platform } from '@tauri-apps/plugin-os'
+import VersionInfo from './componets/VersionInfo'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -670,6 +671,14 @@ export default function RootLayout ({
                               </button>
                             </div>
                           </>
+                        ) : (
+                          <p className='text-xl text-center'>
+                            No version selected
+                          </p>
+                        )
+                      ) : popupMode === 3 ? (
+                        managingVersion && downloadedVersionsConfig ? (
+                          <VersionInfo />
                         ) : (
                           <p className='text-xl text-center'>
                             No version selected
