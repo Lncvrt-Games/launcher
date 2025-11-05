@@ -659,14 +659,13 @@ export default function RootLayout ({
                                       </span>
                                     ) : (
                                       <div className='flex flex-col gap-1 w-full'>
-                                        <span>
-                                          Downloading: {Math.floor(v.progress)}%
-                                          of (
+                                        <span className='text-center'>
+                                          Downloaded{' '}
                                           {prettyBytes(v.progressBytes, {
                                             minimumFractionDigits: 1,
                                             maximumFractionDigits: 1
-                                          })}
-                                          /
+                                          })}{' '}
+                                          of{' '}
                                           {prettyBytes(
                                             getVersionInfo(v.version)?.size ??
                                               0,
@@ -674,8 +673,8 @@ export default function RootLayout ({
                                               minimumFractionDigits: 1,
                                               maximumFractionDigits: 1
                                             }
-                                          )}
-                                          )
+                                          )}{' '}
+                                          ({Math.floor(v.progress)}%)
                                         </span>
                                         <ProgressBar
                                           progress={v.progress}
