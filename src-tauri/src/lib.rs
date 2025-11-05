@@ -168,7 +168,10 @@ async fn download(
 
         app.emit(
             "download-progress",
-            format!("{}:{:.8}:{}:{:.2}", &name, progress, downloaded, eta_secs),
+            format!(
+                "{}:{:.8}:{}:{}:{:.2}",
+                &name, progress, downloaded, speed, eta_secs
+            ),
         )
         .unwrap();
     }

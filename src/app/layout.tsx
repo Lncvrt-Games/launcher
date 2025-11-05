@@ -115,10 +115,11 @@ export default function RootLayout ({
     let unlistenUninstalled: (() => void) | null = null
 
     listen<string>('download-progress', event => {
-      const [versionName, progStr, totalSizeStr, etaSecsStr] =
+      const [versionName, progStr, totalSizeStr, speedStr, etaSecsStr] =
         event.payload.split(':')
       const prog = Number(progStr)
       const progBytes = Number(totalSizeStr)
+      const speed = Number(speedStr)
       const etaSecs = Number(etaSecsStr)
       setDownloadProgress(prev => {
         const i = prev.findIndex(d => d.version === versionName)
@@ -128,6 +129,7 @@ export default function RootLayout ({
           ...copy[i],
           progress: prog,
           progressBytes: progBytes,
+          speed,
           etaSecs
         }
         return copy
@@ -279,7 +281,7 @@ export default function RootLayout ({
 
     const newDownloads = list.map(
       version =>
-        new DownloadProgress(version, 0, 0, false, true, false, false, 0)
+        new DownloadProgress(version, 0, 0, false, true, false, false, 0, 0)
     )
 
     setDownloadProgress(newDownloads)
@@ -696,7 +698,13 @@ export default function RootLayout ({
                                               maximumFractionDigits: 1
                                             }
                                           )}{' '}
-                                          (ETA: {formatEtaSmart(v.etaSecs)})
+                                          (ETA: {formatEtaSmart(v.etaSecs)}{' '}
+                                          &bull; Speed:{' '}
+                                          {prettyBytes(v.speed, {
+                                            minimumFractionDigits: 1,
+                                            maximumFractionDigits: 1
+                                          })}
+                                          /s)
                                         </span>
                                         <ProgressBar
                                           progress={v.progress}
