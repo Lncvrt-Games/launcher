@@ -50,9 +50,11 @@ export default function Installs () {
       </div>
       <div className='downloads-container'>
         <div
-          className={`downloads-scroll h-[calc(100vh-${
-            platform() === 'windows' ? '116' : '84'
-          }px)]`}
+          className={`downloads-scroll ${
+            platform() === 'windows'
+              ? 'h-[calc(100vh-116px)]'
+              : 'h-[calc(100vh-84px)]'
+          }`}
         >
           {downloadedVersionsConfig && downloadedVersionsConfig.list.length ? (
             downloadedVersionsConfig.list
