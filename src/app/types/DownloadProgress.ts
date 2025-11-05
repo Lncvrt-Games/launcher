@@ -6,6 +6,7 @@ export class DownloadProgress {
     public failed: boolean,
     public queued: boolean,
     public hash_checking: boolean,
-    public finishing: boolean
+    public finishing: boolean,
+    public etaSecs: number
   ) { }
 }

@@ -115,14 +115,21 @@ export default function RootLayout ({
     let unlistenUninstalled: (() => void) | null = null
 
     listen<string>('download-progress', event => {
-      const [versionName, progStr, totalSizeStr] = event.payload.split(':')
+      const [versionName, progStr, totalSizeStr, etaSecsStr] =
+        event.payload.split(':')
       const prog = Number(progStr)
       const progBytes = Number(totalSizeStr)
+      const etaSecs = Number(etaSecsStr)
       setDownloadProgress(prev => {
         const i = prev.findIndex(d => d.version === versionName)
         if (i === -1) return prev
         const copy = [...prev]
-        copy[i] = { ...copy[i], progress: prog, progressBytes: progBytes }
+        copy[i] = {
+          ...copy[i],
+          progress: prog,
+          progressBytes: progBytes,
+          etaSecs
+        }
         return copy
       })
     }).then(f => (unlistenProgress = f))
@@ -271,7 +278,8 @@ export default function RootLayout ({
     setSelectedVersionList([])
 
     const newDownloads = list.map(
-      version => new DownloadProgress(version, 0, 0, false, true, false, false)
+      version =>
+        new DownloadProgress(version, 0, 0, false, true, false, false, 0)
     )
 
     setDownloadProgress(newDownloads)
@@ -351,6 +359,20 @@ export default function RootLayout ({
     ).length
 
     return { installed, total }
+  }
+
+  function formatEtaSmart (seconds: number) {
+    if (seconds < 60) return `${Math.floor(seconds)}s`
+    if (seconds < 3600)
+      return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`
+    if (seconds < 86400) {
+      const h = Math.floor(seconds / 3600)
+      const m = Math.floor((seconds % 3600) / 60)
+      return `${h}h ${m}m`
+    }
+    const d = Math.floor(seconds / 86400)
+    const h = Math.floor((seconds % 86400) / 3600)
+    return `${d}d ${h}h`
   }
 
   return (
@@ -674,7 +696,7 @@ export default function RootLayout ({
                                               maximumFractionDigits: 1
                                             }
                                           )}{' '}
-                                          ({Math.floor(v.progress)}%)
+                                          (ETA: {formatEtaSmart(v.etaSecs)})
                                         </span>
                                         <ProgressBar
                                           progress={v.progress}

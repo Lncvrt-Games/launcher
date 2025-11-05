@@ -2,6 +2,7 @@ use futures_util::stream::StreamExt;
 use sha2::{Digest, Sha512};
 use std::fs;
 use std::path::Path;
+use std::time::Instant;
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, copy},
@@ -135,6 +136,8 @@ async fn download(
         .await
         .unwrap();
 
+    let start = Instant::now();
+
     while let Ok(Some(chunk_result)) = timeout(Duration::from_secs(5), stream.next()).await {
         let chunk = match chunk_result {
             Ok(c) => c,
@@ -155,8 +158,19 @@ async fn download(
             0.0
         };
 
-        app.emit("download-progress", format!("{}:{:.8}:{}", &name, progress, downloaded))
-            .unwrap();
+        let elapsed_secs = start.elapsed().as_secs_f64();
+        let speed = downloaded as f64 / elapsed_secs;
+        let eta_secs = if total_size > downloaded {
+            (total_size - downloaded) as f64 / speed
+        } else {
+            0.0
+        };
+
+        app.emit(
+            "download-progress",
+            format!("{}:{:.8}:{}:{:.2}", &name, progress, downloaded, eta_secs),
+        )
+        .unwrap();
     }
 
     if total_size > 0 && downloaded < total_size {
