@@ -641,7 +641,7 @@ export default function RootLayout ({
                                   key={i}
                                   className='popup-entry flex flex-col justify-between'
                                 >
-                                  <p className='text-2xl'>
+                                  <p className='text-2xl text-center'>
                                     {
                                       getVersionGame(
                                         getVersionInfo(v.version)?.game
@@ -653,7 +653,7 @@ export default function RootLayout ({
                                     {v.failed ? (
                                       <>
                                         <div className='flex items-center'>
-                                          <span className='text-red-500'>
+                                          <span className='text-red-500 inline-block w-full text-center'>
                                             Download failed
                                           </span>
                                           <button
@@ -671,19 +671,19 @@ export default function RootLayout ({
                                         </div>
                                       </>
                                     ) : v.queued ? (
-                                      <span className='text-yellow-500'>
+                                      <span className='text-yellow-500 inline-block w-full text-center'>
                                         Queued…
                                       </span>
                                     ) : v.queued ? (
-                                      <span className='text-yellow-500'>
+                                      <span className='text-yellow-500 inline-block w-full text-center'>
                                         Queued…
                                       </span>
                                     ) : v.hash_checking ? (
-                                      <span className='text-blue-500'>
+                                      <span className='text-blue-500 inline-block w-full text-center'>
                                         Checking hash...
                                       </span>
                                     ) : v.finishing ? (
-                                      <span className='text-green-500'>
+                                      <span className='text-green-500 inline-block w-full text-center'>
                                         Finishing...
                                       </span>
                                     ) : (
