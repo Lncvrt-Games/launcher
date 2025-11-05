@@ -515,8 +515,13 @@ export default function RootLayout ({
                               (v, i) => (
                                 <div key={i} className='popup-entry'>
                                   <p className='text-2xl'>
-                                    {getVersionGame(v.game)?.name} v
-                                    {v.versionName}
+                                    {getVersionGame(v.game)?.cutOff == null
+                                      ? getVersionGame(v.game)?.name
+                                      : getVersionGame(v.game)?.name.substring(
+                                          0,
+                                          getVersionGame(v.game)?.cutOff ?? 0
+                                        ) + '...'}{' '}
+                                    v{v.versionName}
                                   </p>
                                   <button
                                     className='button right-22 bottom-1.5'
