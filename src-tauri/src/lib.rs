@@ -150,12 +150,12 @@ async fn download(
         downloaded += chunk.len() as u64;
 
         let progress = if total_size > 0 {
-            (downloaded * 100 / total_size) as u8
+            (downloaded as f64 / total_size as f64) * 100.0
         } else {
-            0
+            0.0
         };
 
-        app.emit("download-progress", format!("{}:{}", &name, progress))
+        app.emit("download-progress", format!("{}:{:.8}:{}", &name, progress, downloaded))
             .unwrap();
     }
 

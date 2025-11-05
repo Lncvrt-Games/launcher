@@ -42,6 +42,8 @@ import { listen } from '@tauri-apps/api/event'
 import { usePathname } from 'next/navigation'
 import { arch, platform } from '@tauri-apps/plugin-os'
 import VersionInfo from './componets/VersionInfo'
+import prettyBytes from 'pretty-bytes'
+import ProgressBar from './componets/ProgressBar'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -113,13 +115,14 @@ export default function RootLayout ({
     let unlistenUninstalled: (() => void) | null = null
 
     listen<string>('download-progress', event => {
-      const [versionName, progStr] = event.payload.split(':')
+      const [versionName, progStr, totalSizeStr] = event.payload.split(':')
       const prog = Number(progStr)
+      const progBytes = Number(totalSizeStr)
       setDownloadProgress(prev => {
         const i = prev.findIndex(d => d.version === versionName)
         if (i === -1) return prev
         const copy = [...prev]
-        copy[i] = { ...copy[i], progress: prog }
+        copy[i] = { ...copy[i], progress: prog, progressBytes: progBytes }
         return copy
       })
     }).then(f => (unlistenProgress = f))
@@ -268,7 +271,7 @@ export default function RootLayout ({
     setSelectedVersionList([])
 
     const newDownloads = list.map(
-      version => new DownloadProgress(version, 0, false, true, false, false)
+      version => new DownloadProgress(version, 0, 0, false, true, false, false)
     )
 
     setDownloadProgress(newDownloads)
@@ -655,9 +658,30 @@ export default function RootLayout ({
                                         Finishing...
                                       </span>
                                     ) : (
-                                      <span>
-                                        Downloading: {v.progress}% done
-                                      </span>
+                                      <div className='flex flex-col gap-1 w-full'>
+                                        <span>
+                                          Downloading: {Math.floor(v.progress)}%
+                                          of (
+                                          {prettyBytes(v.progressBytes, {
+                                            minimumFractionDigits: 1,
+                                            maximumFractionDigits: 1
+                                          })}
+                                          /
+                                          {prettyBytes(
+                                            getVersionInfo(v.version)?.size ??
+                                              0,
+                                            {
+                                              minimumFractionDigits: 1,
+                                              maximumFractionDigits: 1
+                                            }
+                                          )}
+                                          )
+                                        </span>
+                                        <ProgressBar
+                                          progress={v.progress}
+                                          className='w-full'
+                                        />
+                                      </div>
                                     )}
                                   </div>
                                 </div>
