@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { invoke } from '@tauri-apps/api/core'
 import { useGlobal } from '../GlobalProvider'
 import { useSearchParams } from 'next/navigation'
+import { platform } from '@tauri-apps/plugin-os'
 
 export default function Installs () {
   const {
@@ -48,7 +49,11 @@ export default function Installs () {
         </button>
       </div>
       <div className='downloads-container'>
-        <div className='downloads-scroll'>
+        <div
+          className={`downloads-scroll h-[calc(100vh-${
+            platform() === 'windows' ? '116' : '84'
+          }px)]`}
+        >
           {downloadedVersionsConfig && downloadedVersionsConfig.list.length ? (
             downloadedVersionsConfig.list
               .filter(v => {

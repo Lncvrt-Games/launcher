@@ -461,7 +461,7 @@ export default function RootLayout ({
               >
                 <Sidebar />
                 <div
-                  className='relative z-2 ml-[239px] w-[761px] border-b border-(--col3) h-[33px] bg-(--col1)'
+                  className='relative z-2 ml-[239px] w-[calc(100vh-239px)] border-b border-(--col3) h-[33px] bg-(--col1)'
                   style={{
                     display: platform() === 'windows' ? 'block' : 'none'
                   }}

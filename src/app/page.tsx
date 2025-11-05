@@ -10,6 +10,7 @@ import {
   faShieldHalved,
   faWarning
 } from '@fortawesome/free-solid-svg-icons'
+import { platform } from '@tauri-apps/plugin-os'
 
 export default function Installs () {
   const {
@@ -49,7 +50,11 @@ export default function Installs () {
         </button>
       </div>
       <div className='downloads-container'>
-        <div className='downloads-scroll'>
+        <div
+          className={`downloads-scroll h-[calc(100vh-${
+            platform() === 'windows' ? '116' : '84'
+          }px)]`}
+        >
           {downloadedVersionsConfig && downloadedVersionsConfig.list.length ? (
             getListOfGames()
               .sort((a, b) => {
