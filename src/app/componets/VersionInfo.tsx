@@ -81,12 +81,24 @@ export default function VersionInfo () {
           <FontAwesomeIcon icon={faCode} color='lightgray' />
           <p>Developer: {gameInfo?.developer}</p>
         </div>
-        <div className='entry-info-item'>
+        <div className='entry-info-item' hidden={versionSize === null}>
           <FontAwesomeIcon icon={faHardDrive} color='lightgray' />
           <p>
-            Size:{' '}
+            Size on disk:{' '}
             {versionSize !== null
               ? prettyBytes(versionSize, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+              : 'Loading...'}
+          </p>
+        </div>
+        <div className='entry-info-item' hidden={!versionInfo}>
+          <FontAwesomeIcon icon={faHardDrive} color='lightgray' />
+          <p>
+            Size when downloaded (zipped):{' '}
+            {versionInfo
+              ? prettyBytes(versionInfo.size, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
                 })

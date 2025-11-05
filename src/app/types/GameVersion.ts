@@ -6,4 +6,5 @@ export interface GameVersion {
   downloadUrl: string
   executable: string
   sha512sum: string
+  size: number
 }
