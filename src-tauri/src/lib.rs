@@ -19,7 +19,7 @@ use tokio::{io::AsyncWriteExt, time::timeout};
 use zip::ZipArchive;
 
 #[cfg(target_os = "linux")]
-use std::{fs, os::unix::fs::PermissionsExt};
+use std::{os::unix::fs::PermissionsExt};
 #[cfg(target_os = "windows")]
 use tauri_plugin_decorum::WebviewWindowExt;
 
