@@ -492,21 +492,7 @@ export default function RootLayout ({
                                     {v.versionName}
                                   </p>
                                   <button
-                                    className={`button right-${
-                                      selectedVersionList.includes(v.id)
-                                        ? '30'
-                                        : '23'
-                                    } bottom-2`}
-                                    onClick={() => {
-                                      setManagingVersion(v.id)
-                                      setViewingInfoFromDownloads(true)
-                                      setPopupMode(3)
-                                    }}
-                                  >
-                                    <FontAwesomeIcon icon={faInfo} /> Info
-                                  </button>
-                                  <button
-                                    className='button right-2 bottom-2'
+                                    className='button right-22 bottom-1.5'
                                     onClick={() => {
                                       setSelectedVersionList(prev =>
                                         prev.includes(v.id)
@@ -525,6 +511,16 @@ export default function RootLayout ({
                                         <FontAwesomeIcon icon={faAdd} /> Add
                                       </>
                                     )}
+                                  </button>
+                                  <button
+                                    className='button right-1.5 bottom-1.5'
+                                    onClick={() => {
+                                      setManagingVersion(v.id)
+                                      setViewingInfoFromDownloads(true)
+                                      setPopupMode(3)
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faInfo} /> Info
                                   </button>
                                 </div>
                               )
