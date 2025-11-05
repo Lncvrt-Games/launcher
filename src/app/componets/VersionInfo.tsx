@@ -52,12 +52,18 @@ export default function VersionInfo () {
             )}
           </p>
         </div>
-        <div className='entry-info-item'>
+        <div
+          className='entry-info-item'
+          hidden={!versionInfo || versionInfo.releaseDate == 0}
+        >
           <p>
             Released{' '}
-            {!versionInfo || versionInfo.releaseDate == 0
-              ? 'N/A'
-              : format(new Date(versionInfo.releaseDate * 1000), 'MM/dd/yyyy')}
+            {format(
+              new Date(
+                versionInfo?.releaseDate ? versionInfo.releaseDate * 1000 : 0
+              ),
+              'MM/dd/yyyy'
+            )}
           </p>
         </div>
         <div className='entry-info-item'>
