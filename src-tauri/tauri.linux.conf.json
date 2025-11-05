@@ -15,8 +15,8 @@
         "title": "Lncvrt Games Launcher",
         "width": 1000,
         "height": 600,
-        "resizable": false,
-        "maximizable": false
+        "minWidth": 875,
+        "minHeight": 500
       }
     ],
     "security": {

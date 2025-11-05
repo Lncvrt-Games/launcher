@@ -111,7 +111,7 @@ body {
 }
 
 .popup-box {
-  @apply relative w-[60vw] h-[80vh] rounded-lg bg-(--col1) border border-(--col3) flex flex-col p-6;
+  @apply relative w-[600px] h-[480px] rounded-lg bg-(--col1) border border-(--col3) flex flex-col p-6;
 }
 
 .popup-content {

@@ -34,7 +34,7 @@ export default function Sidebar () {
   return (
     <aside className='sidebar'>
       <div
-        className='dragarea'
+        data-tauri-drag-region
         style={{
           height: '30px',
           width: 'calc(var(--spacing) * 60)',
@@ -45,9 +45,6 @@ export default function Sidebar () {
           zIndex: 9999,
           display: platform() == 'macos' ? 'block' : 'none',
           pointerEvents: 'auto'
-        }}
-        onMouseDown={() => {
-          getCurrentWindow().startDragging()
         }}
       ></div>
       <div className='logo'>
