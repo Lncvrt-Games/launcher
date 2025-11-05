@@ -42,7 +42,6 @@ import { listen } from '@tauri-apps/api/event'
 import { usePathname } from 'next/navigation'
 import { arch, platform } from '@tauri-apps/plugin-os'
 import VersionInfo from './componets/VersionInfo'
-import { set } from 'date-fns'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -493,7 +492,11 @@ export default function RootLayout ({
                                     {v.versionName}
                                   </p>
                                   <button
-                                    className='button right-23 bottom-2'
+                                    className={`button right-${
+                                      selectedVersionList.includes(v.id)
+                                        ? '30'
+                                        : '23'
+                                    } bottom-2`}
                                     onClick={() => {
                                       setManagingVersion(v.id)
                                       setViewingInfoFromDownloads(true)
