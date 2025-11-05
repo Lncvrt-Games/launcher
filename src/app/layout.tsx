@@ -12,6 +12,7 @@ import {
   faChevronLeft,
   faCode,
   faDownload,
+  faInfo,
   faRemove,
   faShieldHalved,
   faWarning,
@@ -41,6 +42,7 @@ import { listen } from '@tauri-apps/api/event'
 import { usePathname } from 'next/navigation'
 import { arch, platform } from '@tauri-apps/plugin-os'
 import VersionInfo from './componets/VersionInfo'
+import { set } from 'date-fns'
 
 const roboto = Roboto({
   subsets: ['latin']
@@ -71,10 +73,18 @@ export default function RootLayout ({
     []
   )
   const [managingVersion, setManagingVersion] = useState<string | null>(null)
+  const [viewingInfoFromDownloads, setViewingInfoFromDownloads] =
+    useState<boolean>(false)
   const [selectedGame, setSelectedGame] = useState<number | null>(null)
 
   function handleOverlayClick (e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) {
+      if (viewingInfoFromDownloads) {
+        setPopupMode(0)
+        setViewingInfoFromDownloads(false)
+        setManagingVersion(null)
+        setSelectedGame(null)
+      }
       setFadeOut(true)
       setTimeout(() => setShowPopup(false), 200)
     }
@@ -402,7 +412,8 @@ export default function RootLayout ({
                 getVersionGame,
                 getListOfGames,
                 setSelectedGame,
-                getVersionsAmountData
+                getVersionsAmountData,
+                viewingInfoFromDownloads
               }}
             >
               <div
@@ -412,6 +423,9 @@ export default function RootLayout ({
                     if (popupMode == 0 && selectedGame) {
                       setSelectedGame(null)
                       setSelectedVersionList([])
+                    } else if (viewingInfoFromDownloads) {
+                      setViewingInfoFromDownloads(false)
+                      setPopupMode(0)
                     } else {
                       setFadeOut(true)
                       setTimeout(() => setShowPopup(false), 200)
@@ -445,6 +459,9 @@ export default function RootLayout ({
                           ) {
                             setSelectedGame(null)
                             setSelectedVersionList([])
+                          } else if (viewingInfoFromDownloads) {
+                            setViewingInfoFromDownloads(false)
+                            setPopupMode(0)
                           } else {
                             setFadeOut(true)
                             setTimeout(() => setShowPopup(false), 200)
@@ -453,7 +470,10 @@ export default function RootLayout ({
                       >
                         <FontAwesomeIcon
                           icon={
-                            popupMode == 0 && selectedGame && pathname === '/'
+                            (popupMode == 0 &&
+                              selectedGame &&
+                              pathname === '/') ||
+                            viewingInfoFromDownloads
                               ? faChevronLeft
                               : faXmark
                           }
@@ -472,6 +492,16 @@ export default function RootLayout ({
                                     {getVersionGame(v.game)?.name} v
                                     {v.versionName}
                                   </p>
+                                  <button
+                                    className='button right-23 bottom-2'
+                                    onClick={() => {
+                                      setManagingVersion(v.id)
+                                      setViewingInfoFromDownloads(true)
+                                      setPopupMode(3)
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faInfo} /> Info
+                                  </button>
                                   <button
                                     className='button right-2 bottom-2'
                                     onClick={() => {

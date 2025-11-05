@@ -19,7 +19,8 @@ export default function VersionInfo () {
     getVersionGame,
     getVersionInfo,
     managingVersion,
-    downloadedVersionsConfig
+    downloadedVersionsConfig,
+    viewingInfoFromDownloads
   } = useGlobal()
   if (!managingVersion || !downloadedVersionsConfig) return <></>
 
@@ -43,11 +44,13 @@ export default function VersionInfo () {
         {getVersionInfo(managingVersion)?.versionName}
       </p>
       <div className='popup-content flex flex-col items-center justify-center gap-2 h-full'>
-        <div className='entry-info-item'>
+        <div className='entry-info-item' hidden={viewingInfoFromDownloads}>
           <p>
             Installed{' '}
             {format(
-              new Date(downloadedVersionsConfig.timestamps[managingVersion]),
+              new Date(
+                downloadedVersionsConfig.timestamps[managingVersion] ?? 0
+              ),
               'MM/dd/yyyy'
             )}
           </p>
@@ -66,22 +69,25 @@ export default function VersionInfo () {
             )}
           </p>
         </div>
-        <div className='entry-info-item'>
+        <div className='entry-info-item' hidden={!gameInfo?.official}>
           <FontAwesomeIcon icon={faCheck} color='#19c84b' />
           <p>Official</p>
         </div>
-        <div className='entry-info-item'>
+        <div className='entry-info-item' hidden={gameInfo?.official}>
           <FontAwesomeIcon
             icon={gameInfo?.verified ? faShieldHalved : faWarning}
             color={gameInfo?.verified ? '#19c84b' : '#ffc800'}
           />
           <p>{gameInfo?.verified ? 'Verified' : 'Unverified'}</p>
         </div>
-        <div className='entry-info-item'>
+        <div className='entry-info-item' hidden={gameInfo?.official}>
           <FontAwesomeIcon icon={faCode} color='lightgray' />
           <p>Developer: {gameInfo?.developer}</p>
         </div>
-        <div className='entry-info-item' hidden={versionSize === null}>
+        <div
+          className='entry-info-item'
+          hidden={viewingInfoFromDownloads || versionSize === null}
+        >
           <FontAwesomeIcon icon={faHardDrive} color='lightgray' />
           <p>
             Size on disk:{' '}

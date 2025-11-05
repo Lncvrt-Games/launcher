@@ -34,6 +34,7 @@ type GlobalCtxType = {
     installed: number
     total: number
   } | null
+  viewingInfoFromDownloads: boolean
 }
 
 const GlobalCtx = createContext<GlobalCtxType | null>(null)
